@@ -193,9 +193,14 @@ class BookmarkView extends Backbone.View
     'click': 'click'
 
   click: (event) =>
-    chrome.tabs.getSelected null, (tab) =>
-      chrome.tabs.update(tab.id, url: @model.get('href'))
-    window.close()
+    # If cmd- or ctrl-clicked, open the link in a new background tab.
+    if event.metaKey or event.ctrlKey
+      chrome.tabs.create(url: @model.get('href'), selected: false)
+    # Otherwise, open the link in the current tab and close the popup.
+    else
+      chrome.tabs.getSelected null, (tab) =>
+        chrome.tabs.update(tab.id, url: @model.get('href'))
+      window.close()
     return false
 
 
