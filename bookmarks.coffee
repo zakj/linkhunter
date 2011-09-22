@@ -33,7 +33,7 @@ Backbone.sync = (method, model, options) ->
 
 ## Options
 
-# A simple class to wrap `localStorage` for saving options and provide
+# A simple class to wrap `localStorage` for retrieving options, and provide
 # defaults.
 class Options
 
@@ -42,13 +42,10 @@ class Options
     @username = localStorage.username
     @password = localStorage.password
 
-  reload: ->
-    @constructor()
-
 
 # The options page itself.
 class OptionsView extends Backbone.View
-  el: $('form')
+  el: $('form.options')
 
   initialize: ->
     @service = @$('[name=service]')
@@ -240,23 +237,15 @@ class BookmarksView extends Backbone.View
 
 # The main application view. Manages the bookmarks collection, searching, and
 # keyboard input.
-class BookmarksApp extends Backbone.View
-  el: $('body')
-  collectionTypes:
-    'delicious': DeliciousCollection
-    'pinboard': PinboardCollection
+class SearchView extends Backbone.View
+  el: $('form.search')
 
-  initialize: ->
-    options = new Options
-    @view = new BookmarksView
+  initialize: (options) ->
+    @listView = new BookmarksView
     @search = $('input')
     @feedback = $('.feedback')
-    @bookmarks = new @collectionTypes[options.service]
-      username: options.username
-      password: options.password
+    @bookmarks = options.bookmarks
     @bookmarks.bind('reset', @render)
-    @bookmarks.fetch()
-    @bookmarks.reloadIfNeeded()
 
   render: =>
     query = @search.val()
@@ -267,7 +256,7 @@ class BookmarksApp extends Backbone.View
       visible = @bookmarks.search(query)
       label = if visible.length is 1 then 'match' else 'matches'
       @feedback.text("#{visible.length} #{label}")
-    @view.render(visible)
+    @listView.render(visible)
 
   events:
     'blur input': 'refocus'
@@ -280,11 +269,45 @@ class BookmarksApp extends Backbone.View
   # Handle up/down/enter navigation of the selected item.
   keydown: (event) =>
     switch event.keyCode
-      when 40 then @view.selectNext()      # down arrow
-      when 38 then @view.selectPrevious()  # up arrow
-      when 13 then @view.visitSelected()   # enter
+      when 40 then @listView.selectNext()      # down arrow
+      when 38 then @listView.selectPrevious()  # up arrow
+      when 13 then @listView.visitSelected()   # enter
       # Update the filter and allow the event to propagate.
       else
         _.defer(@render)
         return true
     return false
+
+
+class BookmarksApp extends Backbone.Router
+  collectionTypes:
+    'delicious': DeliciousCollection
+    'pinboard': PinboardCollection
+
+  initialize: ->
+    options = new Options
+    @bookmarks = new @collectionTypes[options.service]
+      username: options.username
+      password: options.password
+    @searchView = new SearchView(bookmarks: @bookmarks)
+    @optionsView = new OptionsView
+    @bookmarks.fetch()
+    @bookmarks.reloadIfNeeded()
+
+  routes:
+    '': 'search'
+    'add': 'add'
+    'options': 'options'
+
+  search: ->
+    @searchView.render().el.show()
+    @optionsView.el.hide()
+
+  add: ->
+    options = new Options
+    bookmarklet = "vendor/bookmarklets/#{options.service}.js"
+    chrome.tabs.executeScript(null, file: bookmarklet, -> window.close())
+
+  options: ->
+    @optionsView.render().el.show()
+    @searchView.el.hide()

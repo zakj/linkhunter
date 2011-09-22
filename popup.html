@@ -1,9 +1,12 @@
 <link rel=stylesheet href=compiled/bookmarks.css>
 
-<input autofocus></input>
-<span class=feedback></span>
-
-<ul></ul>
+<form class=search>
+  <input autofocus></input>
+  <span class=feedback></span>
+  <a href=#add>+</a>
+  <a href=#options>O</a>
+  <ul></ul>
+</form>
 
 <script id=bookmark-template type=text/template>
   <img src="http://s2.googleusercontent.com/s2/favicons?domain_url=<%= escape(href) %>" width=16 height=16 alt="">
@@ -12,9 +15,29 @@
   <div class=age><%= _date(time).fromNow() %></div>
 </script>
 
+
+<style>
+  form.options label, form.options input[type=submit] {
+    display: block;
+  }
+</style>
+
+<form class=options>
+  <label><input name=service type=radio value=delicious> Delicious</label>
+  <label><input name=service type=radio value=pinboard> Pinboard</label>
+
+  <label>Username: <input name=username></label>
+  <label>Password: <input type=password name=password></label>
+
+  <input type=submit value=Save>
+</form>
+
 <script src=vendor/jquery-1.6.4.min.js></script>
 <script src=vendor/underscore-min.js></script>
 <script src=vendor/backbone-min.js></script>
 <script src=vendor/underscore.date.min.js></script>
 <script src=compiled/bookmarks.js></script>
-<script>app = new BookmarksApp</script>
+<script>
+  app = new BookmarksApp;
+  Backbone.history.start();
+</script>
