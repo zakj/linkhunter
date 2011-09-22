@@ -1,0 +1,20 @@
+<link rel=stylesheet href=compiled/bookmarks.css>
+
+<input autofocus></input>
+<span class=feedback></span>
+
+<ul></ul>
+
+<script id=bookmark-template type=text/template>
+  <img src="http://s2.googleusercontent.com/s2/favicons?domain_url=<%= escape(href) %>" width=16 height=16 alt="">
+  <div class=title><%= description %></div>
+  <div class=href><%= href %></div>
+  <div class=age><%= _date(time).fromNow() %></div>
+</script>
+
+<script src=vendor/jquery-1.6.4.min.js></script>
+<script src=vendor/underscore-min.js></script>
+<script src=vendor/backbone-min.js></script>
+<script src=vendor/underscore.date.min.js></script>
+<script src=compiled/bookmarks.js></script>
+<script>app = new BookmarksApp</script>

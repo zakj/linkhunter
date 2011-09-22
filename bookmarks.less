@@ -1,0 +1,160 @@
+@width: 400px;
+@height: 50px - 2 * @gutter;
+@gutter: 10px;
+@img-size: 30px;
+@text-padding: @gutter + @img-size + @gutter;
+@body-padding: @gutter - 4;  // The popup is padded by 4px.
+
+@background-color: #f1f1f1;
+@border-color: #e8e8e8;
+@highlight-color: #fbfbfb;
+@dark-border-color: #bfbfbf;
+@img-background-color: #e4e4e4;
+@img-border-color: #ddd;
+
+
+// Mixins.
+
+.bold-text() {
+  font-weight: bold;
+  font-size: 13px;
+  color: #000;
+}
+
+.medium-text() {
+  font-size: 11px;
+  color: #666;
+}
+
+.light-text() {
+  font-size: 11px;
+  color: #999;
+}
+
+.ellipsis() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.border-top-radius(@r) {
+  border-top-left-radius: @r;
+  border-top-right-radius: @r;
+}
+
+.border-bottom-radius(@r) {
+  border-bottom-left-radius: @r;
+  border-bottom-right-radius: @r;
+}
+
+
+// Reset.
+* { margin: 0; padding: 0; }
+
+body {
+  font-family: "Helvetica Neue", sans-serif;
+  padding: @body-padding;
+  width: @width;
+  overflow-y: hidden;
+}
+
+// A bug in Chrome causes the popup not to reduce its height to match the
+// height of its contents (though increases in content height work fine). Work
+// around: restrict the body height and add a fake element to provide bottom
+// padding.
+html, body {
+  height: 100px;
+  body:after {
+    display: block;
+    content: "";
+    height: @body-padding;
+  }
+}
+
+input {
+  border-radius: 5px;
+  border: 1px solid @dark-border-color;
+  box-shadow: inset 1px 1px rgba(0, 0, 0, .1);
+  float: left;
+  font-size: 16px;
+  margin-bottom: @gutter;
+  outline: none;
+  padding: 4px @gutter;
+  width: 66%;
+}
+
+.feedback {
+  .light-text;
+  float: left;
+  line-height: 28px;
+  margin-left: 10px;
+}
+
+ul {
+  clear: both;
+}
+
+li {
+  background-color: @background-color;
+  border: 1px solid @border-color;
+  border-bottom-width: 0;
+  cursor: pointer;
+  height: @height;
+  list-style: none;
+  padding: @gutter;
+  position: relative;
+  &:after {
+    border-top: 1px solid @highlight-color;
+    content: "";
+    display: block;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: @width - 2;
+  }
+  &:first-child {
+    .border-top-radius(5px);
+    border-top-color: @border-color;
+    &:after { display: none; }
+  }
+  &:last-child {
+    .border-bottom-radius(5px);
+    border-bottom-width: 1px;
+  }
+}
+
+.selected {
+  background: @highlight-color;
+  border-top-color: @dark-border-color;
+  &:after { border-color: @background-color; }
+}
+
+img {
+  background-color: @img-background-color;
+  border-radius: 4px;
+  border: 1px solid @img-border-color;
+  padding: (@img-size - 16 - 2) / 2;
+}
+
+.title, .href, .age {
+  position: absolute;
+}
+.title {
+  .ellipsis;
+  .bold-text;
+  left: @text-padding;
+  top: @gutter;
+  width: @width - @text-padding - @gutter;
+}
+.href {
+  .ellipsis;
+  .medium-text;
+  left: @text-padding;
+  bottom: @gutter;
+  width: @width - @text-padding - 90;
+}
+.age {
+  .light-text;
+  right: @gutter;
+  bottom: @gutter;
+}

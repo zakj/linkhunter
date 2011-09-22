@@ -1,0 +1,12 @@
+{
+  "name": "LinkHunter",
+  "version": "1.0.0",
+  "description": "Search your Delicious or Pinboard bookmarks.",
+  "browser_action": {
+    "default_icon": "icons/19.png",
+    "default_title": "Linkhunter",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html", /* XXX drop me */
+  "permissions": ["*://*/*", "tabs"]
+}
