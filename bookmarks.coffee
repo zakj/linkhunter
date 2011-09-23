@@ -46,6 +46,7 @@ class Options
     @username = localStorage.username
     @password = localStorage.password
     @firstRun = not @username?
+    @validCredentials = localStorage.validCredentials is 'true'
 
   reload: ->
     @constructor()
@@ -78,16 +79,24 @@ class OptionsView extends Backbone.View
     @serviceInput.val(choice)
     @service.attr('class', choice)
 
+  # Save the options.
   save: (event) =>
-    newService = @$('[name=service]').val()
-    # Indicate that a refresh is needed if the service has changed.
-    if newService isnt localStorage.service
-      localStorage.service = newService
-      localStorage.lastUpdate = '0'
+    localStorage.service = @$('[name=service]').val()
     localStorage.username = @$('[name=username]').val()
     localStorage.password = @$('[name=password]').val()
+    # Reload the app to propagate the new options. Test whether the new
+    # credentials are valid. If so, refresh the data. If not, warn the user.
     app.reload()
-    app.search() # XXX
+    $('h2').text('Checking credentials...')
+    app.bookmarks.isAuthValid (valid) ->
+      if valid
+        localStorage.validCredentials = true
+        $('h2').text('Updating data...')
+        app.bookmarks.reload ->
+          app.navigate('search', true)
+      else
+        localStorage.validCredentials = false
+        $('h2').text('Unable to authenticate.')
     return false
 
 
@@ -121,7 +130,8 @@ class BookmarkCollection extends Backbone.Collection
       error: (jqXHR, textStatus, errorThrown) ->
         console.log('error!', jqXHR, textStatus, errorThrown)  # TODO
     @fetch()
-    @reloadIfNeeded()
+    if options.valid
+      @reloadIfNeeded()
 
   # Return a list of the most recent bookmarks.
   recent: (n = @maxResults) =>
@@ -136,6 +146,17 @@ class BookmarkCollection extends Backbone.Collection
       # Search through both tags and description.
       s = m.get('tags') + m.get('description')
       _.all(res, (re) -> re.test(s))
+
+  # Test the given credentials. `callback` will be called with a single boolean
+  # argument, `true` if the credentials seem correct.
+  isAuthValid: (callback) ->
+    settings = _.clone(@settings)
+    settings.dataType = 'xml'
+    settings.success = (data) ->
+      callback(true)
+    settings.error = (data) ->
+      callback(false)
+    $.ajax(@updateUrl, settings)
 
   # Update the local cache.
   reload: (callback) ->
@@ -321,9 +342,11 @@ class BookmarksApp extends Backbone.Router
       @bookmarks = new @serviceCollections[@options.service]
         username: @options.username
         password: @options.password
-    @optionsView = new OptionsView
+        valid: @options.validCredentials
+    @optionsView = new OptionsView unless @optionsView?
     @searchView = new SearchView(bookmarks: @bookmarks)
 
+  # TODO: Ugh. There has to be a better way.
   reload: ->
     @initialize()
 
@@ -335,7 +358,10 @@ class BookmarksApp extends Backbone.Router
 
   # Always show the options panel until we have enough data to search.
   default: ->
-    if @options.firstRun then @editOptions() else @search()
+    if @options.validCredentials? and @options.validCredentials
+      @search()
+    else
+      @editOptions()
 
   search: ->
     @optionsView.el.hide()
