@@ -129,13 +129,13 @@ class BookmarkCollection extends Backbone.Collection
 
   # Return a list of matching bookmarks.
   search: (query) =>
-    re = new RegExp(query, 'i')
-    tagMatches = @models.filter (m) ->
-      _.any(m.get('tags').split(' '), (tag) -> re.test(tag))
-    titleMatches = @models.filter (m) ->
-      re.test(m.get('description'))
-    # Present tag matches first, followed by title-only matches.
-    _.union(tagMatches, titleMatches)
+    # Words in the query string are separated by whitespace and/or commas. A
+    # bookmark must match all given words to be considered a valid result.
+    res = (new RegExp(word, 'i') for word in query.split(/[, ]+/))
+    @models.filter (m) ->
+      # Search through both tags and description.
+      s = m.get('tags') + m.get('description')
+      _.all(res, (re) -> re.test(s))
 
   # Update the local cache.
   reload: (callback) ->
