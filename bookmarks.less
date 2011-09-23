@@ -100,7 +100,6 @@ input {
   border: 1px solid @border-color;
   box-shadow: inset 1px 1px 2px rgba(128, 128, 128, .1);
   font-size: 16px;
-  margin-bottom: @gutter;
   outline: none;
   padding: 5px @gutter;
 }
@@ -136,13 +135,22 @@ img {
 form#search {
   header {
     -webkit-box-pack: justify;
+    -webkit-box-align: center;
     display: -webkit-box;
+    margin-bottom: @gutter;
     input {
       display: block;
       width: 66%;
     }
     a {
-      margin-left: @gutter - 4;
+      margin-left: 1px;
+      padding: 0;
+      height: 26px;
+      width: 27px;
+      text-align: center;
+    }
+    img {
+      margin-top: 5px;
     }
   }
 
@@ -184,11 +192,13 @@ form#search {
     &:after { border-color: @background-color; }
   }
 
-  img {
-    .img-wrapper;
-    width: @img-size;
-    height: @img-size;
-    padding: (@img-size - 16 - 2) / 2;
+  li {
+    img {
+      .img-wrapper;
+      width: @img-size;
+      height: @img-size;
+      padding: (@img-size - 16 - 2) / 2;
+    }
   }
 
   .title, .href, .age {
@@ -269,6 +279,7 @@ form#options {
   input {
     border: 1px solid #d2d2d2;
     box-shadow: inset 1px 1px 2px rgba(128, 128, 128, .2);
+    margin-bottom: @gutter;
     width: 100%;
   }
   button {
