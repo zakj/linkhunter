@@ -141,11 +141,17 @@ class BookmarkCollection extends Backbone.Collection
   search: (query) =>
     # Words in the query string are separated by whitespace and/or commas. A
     # bookmark must match all given words to be considered a valid result.
-    res = (new RegExp(word, 'i') for word in query.split(/[, ]+/))
-    @models.filter (m) ->
+    regexps = (new RegExp(word, 'i') for word in query.split(/[, ]+/))
+    # Limit the results to maxResults; abuse _.detect for this purpose because
+    # there's no way to exit early from _.filter and there's no point
+    # traversing thousands of bookmarks once we've already found maxResults.
+    results = []
+    @detect (m) =>
       # Search through both tags and description.
       s = m.get('tags') + m.get('description')
-      _.all(res, (re) -> re.test(s))
+      results.push(m) if _.all(regexps, (re) -> re.test(s))
+      return results.length >= @maxResults
+    return results
 
   # Test the given credentials. `callback` will be called with a single boolean
   # argument, `true` if the credentials seem correct.
