@@ -9,10 +9,10 @@
 </form>
 
 <script id=bookmark-template type=text/template>
-  <img src="http://s2.googleusercontent.com/s2/favicons?domain_url=<%= escape(href) %>" width=16 height=16 alt="">
-  <div class=title><%= description %></div>
-  <div class=href><%= href %></div>
-  <div class=age><%= _date(time).fromNow() %></div>
+  <img src="http://s2.googleusercontent.com/s2/favicons?domain_url={{ escape(href) }}" alt="">
+  <div class=title>{{ description }}</div>
+  <div class=href>{{ href }}</div>
+  <div class=age>{{ _date(time).fromNow() }}</div>
 </script>
 
 

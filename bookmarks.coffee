@@ -1,5 +1,9 @@
 ## Utilities
 
+# Use Mustache-style templates.
+_.templateSettings = {interpolate: /\{\{ *(.+?) *\}\}/g}
+
+
 # A simple wrapper around `localStorage` to handle JSON conversion.
 class Store
 
