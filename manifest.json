@@ -7,6 +7,5 @@
     "default_title": "Linkhunter",
     "default_popup": "popup.html"
   },
-  "options_page": "options.html", /* XXX drop me */
   "permissions": ["*://*/*", "tabs"]
 }

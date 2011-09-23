@@ -42,39 +42,53 @@ Backbone.sync = (method, model, options) ->
 class Options
 
   constructor: ->
-    @service = localStorage.service or 'pinboard'
+    @service = localStorage.service or 'delicious'
     @username = localStorage.username
     @password = localStorage.password
+    @firstRun = not @username?
+
+  reload: ->
+    @constructor()
 
 
 # The options page itself.
 class OptionsView extends Backbone.View
-  el: $('form.options')
-
-  initialize: ->
-    @service = @$('[name=service]')
-    @username = @$('[name=username]')
-    @password = @$('[name=password]')
-    @render()
+  el: $('#options')
+  template: _.template($('#options-template').html())
 
   render: ->
-    options = new Options
-    @service.filter("[value=#{options.service}]").attr('checked', true)
-    @username.val(options.username)
+    @el.html(@template(app.options))
+    @service = @$('#service')
+    @serviceInput = @service.find('input')
+    @nob = @service.find('.nob')
     return this
 
   events:
-    'submit': 'submit'
+    'click #service a': 'chooseService'
+    'click #service .switch': 'toggleService'
+    'submit': 'save'
 
-  submit: (event) =>
-    newService = @service.filter(':checked').val()
+  chooseService: (event) =>
+    choice = $(event.currentTarget).attr('class')
+    @serviceInput.val(choice)
+    @service.attr('class', choice)
+
+  toggleService: (event) =>
+    choice = if @service.attr('class') is 'pinboard' then 'delicious' else 'pinboard'
+    @serviceInput.val(choice)
+    @service.attr('class', choice)
+
+  save: (event) =>
+    newService = @$('[name=service]').val()
     # Indicate that a refresh is needed if the service has changed.
     if newService isnt localStorage.service
       localStorage.service = newService
       localStorage.lastUpdate = '0'
-    localStorage.username = @username.val()
-    localStorage.password = @password.val() if @password.val()
-    @render()
+    localStorage.username = @$('[name=username]').val()
+    localStorage.password = @$('[name=password]').val()
+    app.reload()
+    app.search() # XXX
+    return false
 
 
 ## Models and collections
@@ -88,6 +102,7 @@ class Bookmark extends Backbone.Model
 class BookmarkCollection extends Backbone.Collection
   model: Bookmark
   store: new Store('bookmarks')
+  maxResults: 10
   # Subclasses are expected to set these attributes. `url` is the API URL to
   # retrieve all bookmarks. `updateUrl` is the API URL to check the last update
   # timestamp. `dataType` is the data type `url` is expected to return.
@@ -105,6 +120,12 @@ class BookmarkCollection extends Backbone.Collection
       password: options.password
       error: (jqXHR, textStatus, errorThrown) ->
         console.log('error!', jqXHR, textStatus, errorThrown)  # TODO
+    @fetch()
+    @reloadIfNeeded()
+
+  # Return a list of the most recent bookmarks.
+  recent: (n = @maxResults) =>
+    @first(n)
 
   # Return a list of matching bookmarks.
   search: (query) =>
@@ -187,7 +208,7 @@ class DeliciousCollection extends BookmarkCollection
 # Display a single bookmark as a clickable element.
 class BookmarkView extends Backbone.View
   tagName: 'li'
-  template: _.template($('#bookmark-template').html() or '')
+  template: _.template($('#bookmark-template').html())
 
   render: ->
     $(@el).html(@template(@model.toJSON()))
@@ -229,7 +250,7 @@ class BookmarksView extends Backbone.View
     @select($(event.currentTarget))
 
   select: (item) ->
-    @selected.removeClass('selected')
+    @selected?.removeClass('selected')
     @selected = item.addClass('selected')
 
   selectNext: =>
@@ -244,10 +265,9 @@ class BookmarksView extends Backbone.View
     @selected.click()
 
 
-# The main application view. Manages the bookmarks collection, searching, and
-# keyboard input.
+# The main application view. Handles the search input box and displays results.
 class SearchView extends Backbone.View
-  el: $('form.search')
+  el: $('#search')
 
   initialize: (options) ->
     @listView = new BookmarksView
@@ -259,13 +279,14 @@ class SearchView extends Backbone.View
   render: =>
     query = @search.val()
     if query.length < 2
-      visible = @bookmarks.first(10)
+      visible = @bookmarks.recent()
       @feedback.text('10 recent')
     else
       visible = @bookmarks.search(query)
       label = if visible.length is 1 then 'match' else 'matches'
       @feedback.text("#{visible.length} #{label}")
     @listView.render(visible)
+    return this
 
   events:
     'blur input': 'refocus'
@@ -289,34 +310,44 @@ class SearchView extends Backbone.View
 
 
 class BookmarksApp extends Backbone.Router
-  collectionTypes:
+  serviceCollections:
     'delicious': DeliciousCollection
     'pinboard': PinboardCollection
 
   initialize: ->
-    options = new Options
-    @bookmarks = new @collectionTypes[options.service]
-      username: options.username
-      password: options.password
-    @searchView = new SearchView(bookmarks: @bookmarks)
+    @options = new Options
+    # Use a dummy collection on the first run, to avoid complicated
+    # machinations in SearchView.initialize.
+    if @options.firstRun
+      @bookmarks = new Backbone.Collection
+    else
+      @bookmarks = new @serviceCollections[@options.service]
+        username: @options.username
+        password: @options.password
     @optionsView = new OptionsView
-    @bookmarks.fetch()
-    @bookmarks.reloadIfNeeded()
+    @searchView = new SearchView(bookmarks: @bookmarks)
+
+  reload: ->
+    @initialize()
 
   routes:
-    '': 'search'
+    '': 'default'
+    'search': 'search'
     'add': 'add'
-    'options': 'options'
+    'options': 'editOptions'
+
+  # Always show the options panel until we have enough data to search.
+  default: ->
+    if @options.firstRun then @editOptions() else @search()
 
   search: ->
-    @searchView.render().el.show()
     @optionsView.el.hide()
+    @searchView.render().el.show()
 
   add: ->
-    options = new Options
-    bookmarklet = "vendor/bookmarklets/#{options.service}.js"
+    bookmarklet = "vendor/bookmarklets/#{@options.service}.js"
     chrome.tabs.executeScript(null, file: bookmarklet, -> window.close())
 
-  options: ->
-    @optionsView.render().el.show()
+  editOptions: ->
     @searchView.el.hide()
+    @optionsView.render().el.show()

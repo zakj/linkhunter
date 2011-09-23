@@ -1,10 +1,12 @@
+<!doctype html>
+
 <link rel=stylesheet href=compiled/bookmarks.css>
 
-<form class=search>
+<form id=search>
   <input autofocus></input>
   <span class=feedback></span>
-  <a href=#add>+</a>
-  <a href=#options>O</a>
+  <a class=button href=#add>+</a>
+  <a class=button href=#options>O</a>
   <ul></ul>
 </form>
 
@@ -16,21 +18,23 @@
 </script>
 
 
-<style>
-  form.options label, form.options input[type=submit] {
-    display: block;
-  }
-</style>
+<form id=options></form>
+<script id=options-template type=text/template>
+  <!-- XXX add height/width -->
+  <h1><img src="/images/logo.png" alt="Linkhunter"></h1>
+  <h2>Find your links on Delicious or Pinboard.</h2>
 
-<form class=options>
-  <label><input name=service type=radio value=delicious> Delicious</label>
-  <label><input name=service type=radio value=pinboard> Pinboard</label>
+  <div id=service class={{ service }}>
+    <input name=service type=hidden value={{ service }}>
+    <a class=delicious>Delicious</a>
+    <span class=switch><span class=nob></span></span>
+    <a class=pinboard>Pinboard</a>
+  </div>
+  <input name=username placeholder=username value="{{ username }}">
+  <input name=password type=password placeholder=password value="{{ password }}">
 
-  <label>Username: <input name=username></label>
-  <label>Password: <input type=password name=password></label>
-
-  <input type=submit value=Save>
-</form>
+  <button type=submit>Go hunting &rarr;</button>
+</script>
 
 <script src=vendor/jquery-1.6.4.min.js></script>
 <script src=vendor/underscore-min.js></script>
