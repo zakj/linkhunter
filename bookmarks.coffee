@@ -272,7 +272,6 @@ class SearchView extends Backbone.View
   initialize: (options) ->
     @listView = new BookmarksView
     @search = $('input')
-    @feedback = $('.feedback')
     @bookmarks = options.bookmarks
     @bookmarks.bind('reset', @render)
 
@@ -280,11 +279,9 @@ class SearchView extends Backbone.View
     query = @search.val()
     if query.length < 2
       visible = @bookmarks.recent()
-      @feedback.text('10 recent')
     else
       visible = @bookmarks.search(query)
       label = if visible.length is 1 then 'match' else 'matches'
-      @feedback.text("#{visible.length} #{label}")
     @listView.render(visible)
     return this
 

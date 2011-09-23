@@ -3,10 +3,11 @@
 <link rel=stylesheet href=compiled/bookmarks.css>
 
 <form id=search>
-  <input autofocus></input>
-  <span class=feedback></span>
-  <a class=button href=#add>+</a>
-  <a class=button href=#options>O</a>
+  <header>
+    <input autofocus></input>
+    <a class=button href=#add>+</a>
+    <a class=button href=#options>O</a>
+  </header>
   <ul></ul>
 </form>
 
@@ -34,7 +35,7 @@
   <input name=password type=password placeholder=password value="{{ password }}">
 
   <button type=submit>
-    Go hunting <img src=/images/arrow-right.png width=15 height=6 alt="">
+    Go hunting &nbsp;<img src=/images/arrow-right.png width=15 height=6 alt="">
   </button>
 </script>
 

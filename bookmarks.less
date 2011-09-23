@@ -106,7 +106,6 @@ input {
 }
 
 button, .button {
-  .small-caps-text;
   background: #eaeaea;
   border-radius: 4px;
   border: 1px solid @dark-border-color;
@@ -114,7 +113,6 @@ button, .button {
   cursor: pointer;
   display: inline-block;
   height: @input-height;
-  margin-top: @gutter;
   padding: 0 (@gutter * 1.5);
   text-decoration: none;
   &:hover {
@@ -123,9 +121,6 @@ button, .button {
   &:active {
     background-color: #dfdfdf;
     box-shadow: inset 1px 1px #999;
-  }
-  img {
-    margin-left: 4px;
   }
 }
 
@@ -139,15 +134,16 @@ img {
 
 
 form#search {
-  input {
-    float: left;
-    width: 66%;
-  }
-  .feedback {
-    .light-text;
-    float: left;
-    line-height: 28px;
-    margin-left: 10px;
+  header {
+    -webkit-box-pack: justify;
+    display: -webkit-box;
+    input {
+      display: block;
+      width: 66%;
+    }
+    a {
+      margin-left: @gutter - 4;
+    }
   }
 
   ul {
@@ -274,5 +270,9 @@ form#options {
     border: 1px solid #d2d2d2;
     box-shadow: inset 1px 1px 2px rgba(128, 128, 128, .2);
     width: 100%;
+  }
+  button {
+    .small-caps-text();
+    margin-top: @gutter;
   }
 }
