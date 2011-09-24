@@ -21,9 +21,13 @@
 
 <form id=options></form>
 <script id=options-template type=text/template>
-  <!-- XXX add height/width -->
-  <h1><img src="/images/logo.png" alt="Linkhunter"></h1>
+  <h1>
+    <img src=/images/mark/48.png alt="" width=48 height=48>
+    <img src=/images/linkhunter.png alt=Linkhunter width=135 height=17>
+  </h1>
   <h2>Find your links on Delicious or Pinboard.</h2>
+
+  <a href=#search class=close></a>
 
   <div id=service class={{ service }}>
     <input name=service type=hidden value={{ service }}>
@@ -37,6 +41,8 @@
   <button type=submit>
     Go hunting &nbsp;<img src=/images/arrow-right.png width=15 height=6 alt="">
   </button>
+
+  <a href=http://hellocabin.com/ target=_blank class=made-by>Made by Cabın</a>
 </script>
 
 <script src=vendor/jquery-1.6.4.min.js></script>

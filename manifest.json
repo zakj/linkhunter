@@ -1,9 +1,14 @@
 {
-  "name": "LinkHunter",
+  "name": "Linkhunter",
   "version": "1.0.0",
-  "description": "Search your Delicious or Pinboard bookmarks.",
+  "description": "Find your links on Delicious or Pinboard.",
+  "homepage_url": "http://hellocabin.com/",
+  "icons": {
+    "128": "images/mark/128.png",
+    "48": "images/mark/48.png"
+  },
   "browser_action": {
-    "default_icon": "icons/19.png",
+    "default_icon": "images/mark/19.png",
     "default_title": "Linkhunter",
     "default_popup": "popup.html"
   },

@@ -13,6 +13,7 @@
 @dark-border-color: #bfbfbf;
 @img-background-color: #e4e4e4;
 @img-border-color: #ddd;
+@salmon-color: #f33;
 
 
 // Mixins.
@@ -75,6 +76,7 @@
 
 // Reset.
 * { box-sizing: border-box; margin: 0; padding: 0; }
+a { text-decoration: none; }
 
 body {
   font-family: "Helvetica Neue", sans-serif;
@@ -113,7 +115,6 @@ button, .button {
   display: inline-block;
   height: @input-height;
   padding: 0 (@gutter * 1.5);
-  text-decoration: none;
   &:hover {
     background-color: #f1f1f1;
   }
@@ -231,13 +232,25 @@ form#options {
   border-radius: 5px;
   border: 1px solid @border-color;
   padding: (@gutter * 2) 69px (@gutter * 6);
+  position: relative;
   h1 {
-    margin-bottom: @gutter;
     text-align: center;
+    img {
+      display: block;
+      margin: 0 auto @gutter;
+    }
+    img:first-child {
+      -webkit-transform: translateX(4px);  // Center the bullseye.
+    }
   }
   h2 {
     .italic-text;
+    color: #999;
     margin-bottom: @gutter * 3;
+    text-align: center;
+  }
+  h2.feedback {
+    color: @salmon-color;
   }
   #service {
     .img-wrapper;
@@ -254,7 +267,7 @@ form#options {
       -webkit-box-flex: 1;
       -webkit-transition: color .1s;
       color: #999;
-      line-height: @input-height;
+      line-height: @input-height + 8;
       text-align: center;
     }
     .switch {
@@ -285,5 +298,34 @@ form#options {
   button {
     .small-caps-text();
     margin-top: @gutter;
+  }
+
+  .close {
+    position: absolute;
+    top: @gutter;
+    right: @gutter;
+    width: 9px;
+    height: 10px;
+    background-image: url(/images/close.png);
+    &:hover {
+      background-position: 0 -10px;
+    }
+  }
+  .made-by {
+    .italic-text;
+    .light-text;
+    position: absolute;
+    bottom: @gutter;
+    right: @gutter;
+    padding-right: 20px;
+    background-image: url(/images/trees.png);
+    background-repeat: no-repeat;
+    background-position: right top;
+    padding-top: 4px;
+
+    &:hover {
+      color: @salmon-color;
+      background-position: right -15px;
+    }
   }
 }
