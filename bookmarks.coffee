@@ -87,16 +87,19 @@ class OptionsView extends Backbone.View
     # Reload the app to propagate the new options. Test whether the new
     # credentials are valid. If so, refresh the data. If not, warn the user.
     app.reload()
-    $('h2').addClass('feedback').html('Checking credentials&hellip;')
-    app.bookmarks.isAuthValid (valid) ->
+    @el.addClass('loading')
+    $('h2').addClass('feedback').html('Inspecting your hunting license&hellip;')
+    app.bookmarks.isAuthValid (valid) =>
       if valid
         localStorage.validCredentials = true
-        $('h2').html('Updating data&hellip;')
-        app.bookmarks.reload ->
+        $('h2').html('Rounding up your links&hellip;')
+        app.bookmarks.reload =>
+          @el.removeClass('loading')
           app.navigate('search', true)
       else
         localStorage.validCredentials = false
-        $('h2').text('Unable to authenticate.')
+        $('h2').text("Blast! Somethin' smells rotten.")
+        @el.removeClass('loading')
     return false
 
 

@@ -134,6 +134,7 @@ img {
 
 
 form#search {
+  overflow: hidden;
   header {
     -webkit-box-pack: justify;
     -webkit-box-align: center;
@@ -231,21 +232,24 @@ form#options {
   background: url(/images/texture.png);
   border-radius: 5px;
   border: 1px solid @border-color;
+  overflow: hidden;
   padding: (@gutter * 2) 69px (@gutter * 6);
   position: relative;
   h1 {
     text-align: center;
-    img {
+    img, .logo {
       display: block;
       margin: 0 auto @gutter;
     }
-    img:first-child {
+    .logo {
       -webkit-transform: translateX(4px);  // Center the bullseye.
+      background-image: url(/images/mark/48.png);
+      width: 48px; height: 48px;
     }
   }
   h2 {
     .italic-text;
-    color: #999;
+    color: #aaa;
     margin-bottom: @gutter * 3;
     text-align: center;
   }
@@ -326,6 +330,30 @@ form#options {
     &:hover {
       color: @salmon-color;
       background-position: right -15px;
+    }
+  }
+
+  // Animations for loading.
+  h1, h2 {
+    -webkit-transition: -webkit-transform .5s ease-in-out;
+  }
+  #service, input, button {
+    -webkit-transition-property: -webkit-transform, opacity;
+    -webkit-transition-duration: .5s, 250ms;
+    -webkit-transition-delay: 0, 250ms;
+    -webkit-transition-easing: ease-in-out;
+  }
+  &.loading {
+    h1, h2 {
+      -webkit-transform: translateY(100px);
+    }
+    .logo {
+      background-image: url(/images/loading.gif);
+    }
+    #service, input, button {
+      -webkit-transform: translateY(500px);
+      -webkit-transition-delay: 0, 0;
+      opacity: 0;
     }
   }
 }
