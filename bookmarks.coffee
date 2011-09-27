@@ -35,74 +35,6 @@ Backbone.sync = (method, model, options) ->
     options.error('This backend is read-only')
 
 
-## Options
-
-# A simple class to wrap `localStorage` for retrieving options, and provide
-# defaults.
-class Options
-
-  constructor: ->
-    @service = localStorage.service or 'delicious'
-    @username = localStorage.username
-    @password = localStorage.password
-    @firstRun = not @username?
-    @validCredentials = localStorage.validCredentials is 'true'
-
-  reload: ->
-    @constructor()
-
-
-# The options page itself.
-class OptionsView extends Backbone.View
-  el: $('#options')
-  template: _.template($('#options-template').html())
-
-  render: ->
-    @el.html(@template(app.options))
-    @service = @$('#service')
-    @serviceInput = @service.find('input')
-    @nob = @service.find('.nob')
-    return this
-
-  events:
-    'click #service a': 'chooseService'
-    'click #service .switch': 'toggleService'
-    'submit': 'save'
-
-  chooseService: (event) =>
-    choice = $(event.currentTarget).attr('class')
-    @serviceInput.val(choice)
-    @service.attr('class', choice)
-
-  toggleService: (event) =>
-    choice = if @service.attr('class') is 'pinboard' then 'delicious' else 'pinboard'
-    @serviceInput.val(choice)
-    @service.attr('class', choice)
-
-  # Save the options.
-  save: (event) =>
-    localStorage.service = @$('[name=service]').val()
-    localStorage.username = @$('[name=username]').val()
-    localStorage.password = @$('[name=password]').val()
-    # Reload the app to propagate the new options. Test whether the new
-    # credentials are valid. If so, refresh the data. If not, warn the user.
-    app.reload()
-    @el.addClass('loading')
-    $('h2').addClass('feedback').html('Inspecting your hunting license&hellip;')
-    app.bookmarks.isAuthValid (valid) =>
-      if valid
-        localStorage.validCredentials = true
-        $('h2').html('Rounding up your links&hellip;')
-        app.bookmarks.reload =>
-          @el.removeClass('loading')
-          app.navigate('search', true)
-      else
-        localStorage.validCredentials = false
-        $('h2').text("Blast! Somethin' smells rotten.")
-        @el.removeClass('loading')
-    return false
-
-
 ## Models and collections
 
 class Bookmark extends Backbone.Model
@@ -233,6 +165,23 @@ class DeliciousCollection extends BookmarkCollection
     return bookmarks
 
 
+## Options
+
+# A simple class to wrap `localStorage` for retrieving options, and provide
+# defaults.
+class Options
+
+  constructor: ->
+    @service = localStorage.service or 'delicious'
+    @username = localStorage.username
+    @password = localStorage.password
+    @firstRun = not @username?
+    @validCredentials = localStorage.validCredentials is 'true'
+
+  reload: ->
+    @constructor()
+
+
 ## Views
 
 # Display a single bookmark as a clickable element.
@@ -261,7 +210,6 @@ class BookmarkView extends Backbone.View
 
 # Display a list of bookmarks and track the currently-selected one.
 class BookmarksView extends Backbone.View
-  el: $('ul')
 
   render: (bookmarks) =>
     @el.html('')
@@ -295,25 +243,30 @@ class BookmarksView extends Backbone.View
     @selected.click()
 
 
-# The main application view. Handles the search input box and displays results.
+# The main application view. Handles the search input box and displays results
+# using a BookmarksView.
 class SearchView extends Backbone.View
-  el: $('#search')
+  tagName: 'form'
+  className: 'search'
+  template: _.template($('#search-template').html())
 
   initialize: (options) ->
-    @listView = new BookmarksView
-    @search = $('input')
     @bookmarks = options.bookmarks
     @bookmarks.bind('reset', @render)
 
   render: =>
-    query = @search.val()
-    if query.length < 2
-      visible = @bookmarks.recent()
-    else
-      visible = @bookmarks.search(query)
-      label = if visible.length is 1 then 'match' else 'matches'
-    @listView.render(visible)
+    $(@el).html(@template())
+    @resultsView = new BookmarksView(el: @$('ul'))
+    @updateResults()
     return this
+
+  updateResults: =>
+    query = @$('input').val()
+    visible = if query.length < 2
+      @bookmarks.recent()
+    else
+      @bookmarks.search(query)
+    @resultsView.render(visible)
 
   events:
     'blur input': 'refocus'
@@ -321,20 +274,74 @@ class SearchView extends Backbone.View
 
   # Restrict input focus to the search box.
   refocus: (event) =>
-    _.defer(=> @search.focus())
+    _.defer(=> @$('input').focus())
 
   # Handle up/down/enter navigation of the selected item.
   keydown: (event) =>
     switch event.keyCode
-      when 40 then @listView.selectNext()      # down arrow
-      when 38 then @listView.selectPrevious()  # up arrow
-      when 13 then @listView.visitSelected()   # enter
+      when 40 then @resultsView.selectNext()      # down arrow
+      when 38 then @resultsView.selectPrevious()  # up arrow
+      when 13 then @resultsView.visitSelected()   # enter
       # Update the filter and allow the event to propagate.
       else
-        _.defer(@render)
+        _.defer(@updateResults)
         return true
     return false
 
+
+# The options panel.
+class OptionsView extends Backbone.View
+  tagName: 'form'
+  className: 'options'
+  template: _.template($('#options-template').html())
+
+  render: ->
+    $(@el).html(@template(app.options))
+    @service = @$('#service')
+    @serviceInput = @service.find('input')
+    @nob = @service.find('.nob')
+    return this
+
+  events:
+    'click #service a': 'chooseService'
+    'click #service .switch': 'toggleService'
+    'submit': 'save'
+
+  chooseService: (event) =>
+    choice = $(event.currentTarget).attr('class')
+    @serviceInput.val(choice)
+    @service.attr('class', choice)
+
+  toggleService: (event) =>
+    choice = if @service.attr('class') is 'pinboard' then 'delicious' else 'pinboard'
+    @serviceInput.val(choice)
+    @service.attr('class', choice)
+
+  # Save the options.
+  save: (event) =>
+    localStorage.service = @$('[name=service]').val()
+    localStorage.username = @$('[name=username]').val()
+    localStorage.password = @$('[name=password]').val()
+    # Reload the app to propagate the new options. Test whether the new
+    # credentials are valid. If so, refresh the data. If not, warn the user.
+    app.reload()
+    $(@el).addClass('loading')
+    $('h2').addClass('feedback').html('Inspecting your hunting license&hellip;')
+    app.bookmarks.isAuthValid (valid) =>
+      if valid
+        localStorage.validCredentials = true
+        $('h2').html('Rounding up your links&hellip;')
+        app.bookmarks.reload =>
+          $(@el).removeClass('loading')
+          app.navigate('search', true)
+      else
+        localStorage.validCredentials = false
+        $('h2').text("Blast! Somethin' smells rotten.")
+        $(@el).removeClass('loading')
+    return false
+
+
+## Routers
 
 class BookmarksApp extends Backbone.Router
   serviceCollections:
@@ -352,12 +359,15 @@ class BookmarksApp extends Backbone.Router
         username: @options.username
         password: @options.password
         valid: @options.validCredentials
-    @optionsView = new OptionsView unless @optionsView?
-    @searchView = new SearchView(bookmarks: @bookmarks)
+    @panel = $('#panel')
 
   # TODO: Ugh. There has to be a better way.
   reload: ->
     @initialize()
+
+  # Render `view` and make it visible.
+  show: (view) ->
+    @panel.html(view.render().el)
 
   routes:
     '': 'default'
@@ -373,13 +383,11 @@ class BookmarksApp extends Backbone.Router
       @editOptions()
 
   search: ->
-    @optionsView.el.hide()
-    @searchView.render().el.show()
+    @show(new SearchView(bookmarks: @bookmarks))
 
   add: ->
     bookmarklet = "vendor/bookmarklets/#{@options.service}.js"
     chrome.tabs.executeScript(null, file: bookmarklet, -> window.close())
 
   editOptions: ->
-    @searchView.el.hide()
-    @optionsView.render().el.show()
+    @show(new OptionsView)
