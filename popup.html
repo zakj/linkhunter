@@ -13,7 +13,7 @@
 </form>
 
 <script id=bookmark-template type=text/template>
-  <img src="http://s2.googleusercontent.com/s2/favicons?domain_url={{ escape(href) }}" alt="">
+  <img src="http://s2.googleusercontent.com/s2/favicons?domain_url={{ encodeURI(href) }}" alt="">
   <div class=title>{{ description }}</div>
   <div class=href>{{ href }}</div>
   <div class=age>{{ _date(time).fromNow() }}</div>
