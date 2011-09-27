@@ -68,6 +68,9 @@ class BookmarkCollection extends Backbone.Collection
     if options.valid
       @reloadIfNeeded()
 
+  comparator: (bookmark) ->
+    return - Date.parse(bookmark.get('time'))
+
   # Return a list of the most recent bookmarks.
   recent: (n = @maxResults) =>
     @first(n)
