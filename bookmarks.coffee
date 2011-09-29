@@ -5,71 +5,57 @@ _.templateSettings = {interpolate: /\{\{ *(.+?) *\}\}/g}
 
 
 # A simple wrapper around `localStorage` to handle JSON conversion.
-class Store
+class CollectionCache
 
   constructor: (@name) ->
     store = localStorage.getItem(@name)
-    @data = if store then JSON.parse(store) else {}
+    @models = if store then JSON.parse(store) else []
+    @lastUpdated = _.date(localStorage.getItem('lastUpdated') or 0)
 
-  save: (data) ->
-    @data = data
-    localStorage.setItem(@name, JSON.stringify(data))
+  save: ->
+    localStorage.setItem(@name, JSON.stringify(@models))
+    @lastUpdated = _.date()
+    localStorage.setItem('lastUpdated', @lastUpdated.date)
 
-
-# Sync to a `Store` object given as an attribute on the model or collection.
-# The only method to support is `read`, to handle `Collection.fetch()`. Saves
-# are managed directly by the `Store`.
-Backbone.sync = (method, model, options) ->
-  store = model.store or model.collection.store
-
-  if method is 'read'
-    resp = if model.id
-      store.data[model.id]
-    else
-      _.values(store.data)
-    if resp
-      options.success(resp)
-    else
-      options.error('Record not found')
-  else
-    options.error('This backend is read-only')
+  reset: (collection) =>
+    @models = collection.models
+    @save()
 
 
-## Models and collections
+## Models and Collections
 
 class Bookmark extends Backbone.Model
 
 
-# Superclass for cloud bookmark service backends. To support a new backend, add
-# a subclass defining `url`, `updateUrl`, `dataType` attributes and a
-# `parseBookmarks` method.
+# Superclass for cloud bookmark service backends. Subclasses should set `url`
+# and `parse` as usual for Backbone collections.
 class BookmarkCollection extends Backbone.Collection
   model: Bookmark
-  store: new Store('bookmarks')
   maxResults: 10
-  # Subclasses are expected to set these attributes. `url` is the API URL to
-  # retrieve all bookmarks. `updateUrl` is the API URL to check the last update
-  # timestamp. `dataType` is the data type `url` is expected to return.
-  url: undefined
-  updateUrl: undefined
-  dataType: undefined
-  # `parseBookmarks` takes a single argument: the jQuery-parsed data returned
-  # from the query to `url`. It should return the data as an object containing
-  # the bookmarks indexed by hash.
-  parseBookmarks: undefined
 
-  initialize: (options) ->
-    @settings =
-      username: options.username
-      password: options.password
+  # Subclasses should implement a `fetchIfUpdatedSince` method. It must accept
+  # one _.date argument, and call `fetch` if the remote data has been updated
+  # since that time.
+  fetchIfUpdatedSince: -> throw 'Not implemented'
+  # Subclasses should implement an `isAuthValid` method. It must accept one
+  # callback argument, calling it with a boolean reporting whether the given
+  # username and password are correct.
+  isAuthValid: -> throw 'Not implemented'
+  # Subclasses may set an ajaxOptions attribute, which will be passed to
+  # `fetch`. This is mostly useful for controlling `dataType` in one place.
+  ajaxOptions: {}
+
+  initialize: (models, options) ->
+    @settings = _.defaults options, @ajaxOptions,
       error: (jqXHR, textStatus, errorThrown) ->
         console.log('error!', jqXHR, textStatus, errorThrown)  # TODO
-    @fetch()
-    if options.valid
-      @reloadIfNeeded()
 
+  # Sort by most-recent first.
   comparator: (bookmark) ->
     return - Date.parse(bookmark.get('time'))
+
+  fetch: (options = {}) ->
+    super(_.defaults(options, @settings))
 
   # Return a list of the most recent bookmarks.
   recent: (n = @maxResults) =>
@@ -91,8 +77,29 @@ class BookmarkCollection extends Backbone.Collection
       return results.length >= @maxResults
     return results
 
-  # Test the given credentials. `callback` will be called with a single boolean
-  # argument, `true` if the credentials seem correct.
+
+# <http://www.delicious.com/help/api>
+class DeliciousCollection extends BookmarkCollection
+  idAttribute: 'hash'
+  url: 'https://api.del.icio.us/v1/posts/all'
+  ajaxOptions:
+    dataType: 'xml'
+  updateUrl: 'https://api.del.icio.us/v1/posts/update'
+
+  parse: (resp) ->
+    _.map $(resp).find('post'), (post) ->
+      hash: post.getAttribute('hash')
+      description: post.getAttribute('description')
+      href: post.getAttribute('href')
+      tags: post.getAttribute('tags')
+      time: post.getAttribute('time')
+
+  fetchIfUpdatedSince: (date) ->
+    settings = _.extend _.clone(@settings),
+      success: (data) =>
+        @fetch() if _.date($(data).find('update').attr('time')) > date
+    $.ajax(@updateUrl, settings)
+
   isAuthValid: (callback) ->
     settings = _.clone(@settings)
     settings.dataType = 'xml'
@@ -102,87 +109,41 @@ class BookmarkCollection extends Backbone.Collection
       callback(false)
     $.ajax(@updateUrl, settings)
 
-  # Update the local cache.
-  reload: (callback) ->
-    settings = _.clone(@settings)
-    settings.dataType = @dataType
-    settings.success = (data) =>
-      @store.save(@parseBookmarks(data))
-      @fetch()
-      callback?()
-    $.ajax(@url, settings)
-
-  # Find the timestamp marking the most recent remote bookmarks update. The
-  # callback will receive the timestamp as a string.
-  lastUpdate: (callback) ->
-    settings = _.clone(@settings)
-    settings.dataType = 'xml'
-    settings.success = (data) ->
-      callback($(data).find('update').attr('time'))
-    $.ajax(@updateUrl, settings)
-
-  # Update the local cache only if the remote bookmarks have changed since the
-  # last update.
-  reloadIfNeeded: ->
-    lastLocalUpdate = localStorage.lastUpdate or '0'
-    @lastUpdate (lastRemoteUpdate) =>
-      if lastLocalUpdate < lastRemoteUpdate
-        @reload -> localStorage.lastUpdate = lastRemoteUpdate
-
 
 # <http://pinboard.in/api>
-class PinboardCollection extends BookmarkCollection
+class PinboardCollection extends DeliciousCollection
   url: 'https://api.pinboard.in/v1/posts/all?format=json'
   updateUrl: 'https://api.pinboard.in/v1/posts/update'
-  dataType: 'json'
-
-  parseBookmarks: (data) =>
-    bookmarks = {}
-    _.each data, (b) ->
-      bookmarks[b.hash] =
-        id: b.hash
-        description: b.description
-        href: b.href
-        tags: b.tags
-        time: b.time
-    return bookmarks
-
-
-# <http://www.delicious.com/help/api>
-class DeliciousCollection extends BookmarkCollection
-  url: 'https://api.del.icio.us/v1/posts/all'
-  updateUrl: 'https://api.del.icio.us/v1/posts/update'
-  dataType: 'xml'
-
-  parseBookmarks: (data) =>
-    bookmarks = {}
-    $(data).find('post').each () ->
-      post = $(this)
-      hash = post.attr('hash')
-      bookmarks[hash] =
-        id: hash
-        description: post.attr('description')
-        href: post.attr('href')
-        tags: post.attr('tag')
-        time: post.attr('time')
-    return bookmarks
+  ajaxOptions: {}
+  parse: (resp) -> resp
 
 
 ## Options
 
-# A simple class to wrap `localStorage` for retrieving options, and provide
-# defaults.
+# A simple class to wrap `localStorage` to manage options with defaults.
 class Options
+  serviceCollections:
+    'delicious': DeliciousCollection
+    'pinboard': PinboardCollection
 
   constructor: ->
-    @service = localStorage.service or 'delicious'
-    @username = localStorage.username
-    @password = localStorage.password
-    @firstRun = not @username?
-    @validCredentials = localStorage.validCredentials is 'true'
+    # Use getters and setters for a simpler interface.
+    property = (name, fn) =>
+      @__defineGetter__ name, fn
+      @__defineSetter__ name, (value) -> localStorage.setItem(name, value)
+    property 'service', -> localStorage.service or 'delicious'
+    property 'username', -> localStorage.username
+    property 'password', -> localStorage.password
+    property 'firstRun', -> not localStorage.service?
+    property 'validCredentials', -> localStorage.validCredentials is 'true'
 
-  reload: ->
-    @constructor()
+  # Create a collection instance using the class defined by `service`.
+  createCollection: (models = []) ->
+    unless @firstRun
+      new @serviceCollections[@service] models,
+        username: @username
+        password: @password
+        valid: @validCredentials
 
 
 ## Views
@@ -320,21 +281,21 @@ class OptionsView extends Backbone.View
     @serviceInput.val(choice)
     @service.attr('class', choice)
 
-  # Save the options.
+  # Save the options and update the view accordingly.
   save: (event) =>
-    localStorage.service = @$('[name=service]').val()
-    localStorage.username = @$('[name=username]').val()
-    localStorage.password = @$('[name=password]').val()
-    # Reload the app to propagate the new options. Test whether the new
-    # credentials are valid. If so, refresh the data. If not, warn the user.
-    app.reload()
+    app.options.service = @$('[name=service]').val()
+    app.options.username = @$('[name=username]').val()
+    app.options.password = @$('[name=password]').val()
+    # Reload the app's collection and test whether the new credentials are
+    # valid. If so, fetch the data. If not, warn the user.
+    app.loadCollection()
     $(@el).addClass('loading')
     $('h2').addClass('feedback').html('Inspecting your hunting license&hellip;')
     app.bookmarks.isAuthValid (valid) =>
       if valid
         localStorage.validCredentials = true
         $('h2').html('Rounding up your links&hellip;')
-        app.bookmarks.reload =>
+        app.bookmarks.fetch success: =>
           $(@el).removeClass('loading')
           app.navigate('search', true)
       else
@@ -344,32 +305,27 @@ class OptionsView extends Backbone.View
     return false
 
 
-## Routers
+## Router
 
 class BookmarksApp extends Backbone.Router
-  serviceCollections:
-    'delicious': DeliciousCollection
-    'pinboard': PinboardCollection
 
+  # Build a collection, populate it from the local cache, and fire off a
+  # request for updates in the background.
   initialize: ->
     @options = new Options
-    # Use a dummy collection on the first run, to avoid complicated
-    # machinations in SearchView.initialize.
-    if @options.firstRun
-      @bookmarks = new Backbone.Collection
-    else
-      @bookmarks = new @serviceCollections[@options.service]
-        username: @options.username
-        password: @options.password
-        valid: @options.validCredentials
+    @cache = new CollectionCache('bookmarks')
+    @loadCollection()
+    @bookmarks?.fetchIfUpdatedSince(@cache.lastUpdated)
     @panel = $('#panel')
 
-  # TODO: Ugh. There has to be a better way.
-  reload: ->
-    @initialize()
+  loadCollection: ->
+    @bookmarks = @options.createCollection(@cache.models)
+    @bookmarks?.bind('reset', @cache.reset)
 
-  # Render `view` and make it visible.
+  # Render `view` and make it visible, removing any previous view.
   show: (view) ->
+    @currentView?.remove()
+    @currentView = view
     @panel.html(view.render().el)
 
   routes:
@@ -378,15 +334,15 @@ class BookmarksApp extends Backbone.Router
     'add': 'add'
     'options': 'editOptions'
 
-  # Always show the options panel until we have enough data to search.
+  # Redirect to the options panel unless we have valid credentials.
+  guard: (fn) ->
+    if @options.validCredentials then fn() else app.navigate('options', true)
+
   default: ->
-    if @options.validCredentials? and @options.validCredentials
-      @search()
-    else
-      @editOptions()
+    @guard(-> app.navigate('search', true))
 
   search: ->
-    @show(new SearchView(bookmarks: @bookmarks))
+    @guard(=> @show(new SearchView(bookmarks: @bookmarks)))
 
   add: ->
     bookmarklet = "vendor/bookmarklets/#{@options.service}.js"
