@@ -3,14 +3,17 @@
 <link rel=stylesheet href=compiled/bookmarks.css>
 <title>Linkhunter</title>
 
-<form id=search>
+<div id=panel></div>
+
+
+<script id=search-template type=text/template>
   <header>
     <input autofocus>
     <a class=button href=#add><img src=/images/add-link.png width=14 height=14 alt="Add Bookmark"></a>
     <a class=button href=#options><img src=/images/options.png width=14 height=14 alt="Settings"></a>
   </header>
   <ul></ul>
-</form>
+</script>
 
 <script id=bookmark-template type=text/template>
   <img src="http://s2.googleusercontent.com/s2/favicons?domain_url={{ encodeURI(href) }}" alt="">
@@ -20,7 +23,6 @@
 </script>
 
 
-<form id=options></form>
 <script id=options-template type=text/template>
   <h1>
     <div class=logo></div>
