@@ -361,7 +361,7 @@ class OptionsView extends Backbone.View
     $(@el).html(@template(app.options))
     @service = @$('#service')
     @serviceInput = @service.find('input')
-    @nob = @service.find('.nob')
+    @knob = @service.find('.knob')
     return this
 
   events:
