@@ -320,9 +320,24 @@ class AddView extends Backbone.View
     'mouseout .url a': 'unhoverEditUrl'
     'submit': 'save'
 
+  # Reveal the edit-url input, first sliding the fieldset "open". To increase
+  # the height of the fieldset without affecting the layout of the rest of the
+  # page elements, pull the fieldset out of the flow by positioning it
+  # absolutely and increasing the padding of the following element to make up
+  # for it.
   editUrl: (event) =>
-    @$('.url').hide()
-    @$('.edit-url').show()
+    fieldset = @$('fieldset').first()
+    fieldset.css
+      position: 'absolute'
+      top: fieldset.position().top
+      height: fieldset.find('input').outerHeight() * 2 + (5 * 3)
+    @$('.url').css
+      paddingTop: fieldset.outerHeight(true) + 5
+      visibility: 'hidden'
+    fieldset.one 'webkitTransitionEnd', =>
+      # Focus the input box, but ensure the beginning of the URL remains
+      # visible (by default, focus puts the cursor at the end of the content).
+      @$('.edit-url').show().find('input').get(0).setSelectionRange(0, 0)
 
   hoverEditUrl: (event) =>
     @$('.url a').addClass('hover')

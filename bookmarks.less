@@ -318,12 +318,15 @@ button, .button {
 
   form {
     padding: 0 25px;
+    position: relative;
   }
   fieldset {
     .img-wrapper;
+    -webkit-transition: height 200ms;
+    height: 37px;
     margin-bottom: @gutter;
     padding: 4px;
-    position: relative;
+    width: 348px;
   }
   input:not([type=checkbox]) {
     font-size: inherit;
@@ -351,10 +354,11 @@ button, .button {
       padding-right: 0;
     }
     &:after {
-      background-image:
-        -webkit-linear-gradient(0deg, rgba(255,255,255,0), rgba(255,255,255,1));
+      background-image: -webkit-linear-gradient(
+        0deg, rgba(255,255,255,0), rgba(255,255,255,.95));
       content: "";
       display: block;
+      pointer-events: none;
       position: absolute;
       right: 1px; top: 6px;
       width: 40px; height: 16px;
