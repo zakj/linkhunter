@@ -298,6 +298,11 @@ class AddView extends Backbone.View
   className: 'add'
   template: _.template($('#add-template').html())
 
+  errorMessages:
+    'default': 'You missed!'
+    'ajax error': 'API service failure. What have you done?!'
+    'missing url': 'Or not. Your URL blows.'
+
   render: ->
     $(@el).html(@template(app.options))
     chrome.tabs.getSelected null, (tab) =>
@@ -326,18 +331,23 @@ class AddView extends Backbone.View
     @$('.url a').removeClass('hover')
 
   save: (event) =>
+    @$('h2').html('&nbsp;')
     model =
       url: @$('[name=url]').val()
       title: @$('[name=title]').val()
       tags: @$('[name=tags]').val()
       private: @$('[name=private]').is(':checked')
-    # TODO: show some kind of loading animation; show errors
+    $(@el).addClass('loading')
     app.bookmarks.create model,
-      success: ->
-        window.close()
-      error: (msg) ->
-        msg = 'unknown error' unless _.isString(msg)
-        console.log(msg)
+      success: =>
+        $(@el).addClass('done')
+        @$('h2').text('Bravo!')
+        _.delay((-> window.close()), 750)
+      error: (data) =>
+        $(@el).removeClass('loading')
+        data = 'ajax error' unless _.isString(data)
+        msg = @errorMessages[data] or @errorMessages.default
+        @$('h2').text(msg)
     return false
 
 

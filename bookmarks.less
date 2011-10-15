@@ -231,6 +231,7 @@ button, .button {
   background: url(/images/texture.png);
   border-radius: 5px;
   border: 1px solid @border-color;
+  overflow: hidden;
   padding-top: @gutter * 2;
   position: relative;
   h1 {
@@ -277,6 +278,35 @@ button, .button {
   button {
     display: block;
     margin-top: @gutter;
+  }
+
+  // Animations for loading.
+  h1, h2 {
+    -webkit-transition: -webkit-transform .5s ease-in-out;
+  }
+  form {
+    -webkit-transition-property: -webkit-transform, opacity;
+    -webkit-transition-duration: .5s, 250ms;
+    -webkit-transition-delay: 0, 250ms;
+    -webkit-transition-easing: ease-in-out;
+  }
+  &.loading {
+    h1, h2 {
+      -webkit-transform: translateY(100px);
+    }
+    .logo {
+      background-image: url(/images/loading.gif);
+    }
+    form {
+      -webkit-transform: translateY(500px);
+      -webkit-transition-delay: 0, 0;
+      opacity: 0;
+    }
+  }
+  &.loading.done {
+    .logo {
+      background-image: url(/images/mark/48.png);
+    }
   }
 }
 
@@ -373,7 +403,6 @@ button, .button {
 
 .options {
   .panel;
-  overflow: hidden;
   padding-bottom: @gutter * 6;
 
   form {
@@ -432,30 +461,6 @@ button, .button {
     &:hover {
       color: @salmon-color;
       background-position: right -15px;
-    }
-  }
-
-  // Animations for loading.
-  h1, h2 {
-    -webkit-transition: -webkit-transform .5s ease-in-out;
-  }
-  form {
-    -webkit-transition-property: -webkit-transform, opacity;
-    -webkit-transition-duration: .5s, 250ms;
-    -webkit-transition-delay: 0, 250ms;
-    -webkit-transition-easing: ease-in-out;
-  }
-  &.loading {
-    h1, h2 {
-      -webkit-transform: translateY(100px);
-    }
-    .logo {
-      background-image: url(/images/loading.gif);
-    }
-    form {
-      -webkit-transform: translateY(500px);
-      -webkit-transition-delay: 0, 0;
-      opacity: 0;
     }
   }
 }
