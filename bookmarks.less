@@ -203,7 +203,7 @@ img {
     }
   }
 
-  .title, .href, .age {
+  .title, .url, .age {
     position: absolute;
   }
   .title {
@@ -213,7 +213,7 @@ img {
     top: @gutter;
     width: @width - @text-padding - (@gutter * 2);
   }
-  .href {
+  .url {
     .ellipsis;
     .medium-text;
     left: @text-padding;
@@ -224,6 +224,18 @@ img {
     .light-text;
     right: @gutter;
     bottom: @gutter;
+  }
+}
+
+
+.add {
+  label, input:not([type=checkbox]) {
+    display: block;
+    margin-bottom: @gutter;
+    font-size: 12px;
+  }
+  input:not([type=checkbox]) {
+    width: 100%;
   }
 }
 

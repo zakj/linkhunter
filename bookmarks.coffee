@@ -26,6 +26,14 @@ class CollectionCache
 
 class Bookmark extends Backbone.Model
 
+  defaults: ->
+    'time': new Date
+
+  # Since bookmarks are not backed by a `Backbone.sync`-friendly API, all saves
+  # should happen through the `create` method of `BookmarkCollection`
+  # subclasses.
+  save: -> throw 'Use BookmarkCollection.create instead'
+
 
 # Superclass for cloud bookmark service backends. Subclasses should set `url`
 # and `parse` as usual for Backbone collections.
@@ -41,6 +49,10 @@ class BookmarkCollection extends Backbone.Collection
   # callback argument, calling it with a boolean reporting whether the given
   # username and password are correct.
   isAuthValid: -> throw 'Not implemented'
+  # Subclasses should implement a `create` method which takes a model (or
+  # model-like object), creates it via the appropriate API calls, and adds it
+  # to the collection.
+  create: -> throw 'Not implemented'
   # Subclasses may set an ajaxOptions attribute, which will be passed to
   # `fetch`. This is mostly useful for controlling `dataType` in one place.
   ajaxOptions: {}
@@ -71,8 +83,8 @@ class BookmarkCollection extends Backbone.Collection
     # traversing thousands of bookmarks once we've already found maxResults.
     results = []
     @detect (m) =>
-      # Search through both tags and description.
-      s = m.get('tags') + m.get('description')
+      # Search through both tags and title.
+      s = m.get('tags') + m.get('title')
       results.push(m) if _.all(regexps, (re) -> re.test(s))
       return results.length >= @maxResults
     return results
@@ -85,12 +97,13 @@ class DeliciousCollection extends BookmarkCollection
   ajaxOptions:
     dataType: 'xml'
   updateUrl: 'https://api.del.icio.us/v1/posts/update'
+  addUrl: 'https://api.del.icio.us/v1/posts/add'
 
   parse: (resp) ->
-    _.map $(resp).find('post'), (post) ->
+    _.map resp.getElementsByTagName('post'), (post) ->
       hash: post.getAttribute('hash')
-      description: post.getAttribute('description')
-      href: post.getAttribute('href')
+      title: post.getAttribute('description')
+      url: post.getAttribute('href')
       tags: post.getAttribute('tags')
       time: post.getAttribute('time')
 
@@ -101,21 +114,45 @@ class DeliciousCollection extends BookmarkCollection
     $.ajax(@updateUrl, settings)
 
   isAuthValid: (callback) ->
-    settings = _.clone(@settings)
-    settings.dataType = 'xml'
-    settings.success = (data) ->
-      callback(true)
-    settings.error = (data) ->
-      callback(false)
+    settings = _.extend _.clone(@settings),
+      dataType: 'xml'
+      success: (data) -> callback(true)
+      error: (data) -> callback(false)
     $.ajax(@updateUrl, settings)
+
+  create: (model, options) ->
+    model = @_prepareModel(model)
+    return false unless model
+    data = model.toJSON()
+    data.description = data.title
+    data.shared = 'no' if data.private
+    settings = _.extend _.clone(@settings),
+      data: data
+      success: (data) =>
+        result = data.getElementsByTagName('result')[0].getAttribute('code')
+        if result is 'done'
+          options.success?()
+        else
+          options.error?(result)
+    settings.error = options.error if options.error?
+    $.ajax(@addUrl, settings)
+    return model
 
 
 # <http://pinboard.in/api>
 class PinboardCollection extends DeliciousCollection
   url: 'https://api.pinboard.in/v1/posts/all?format=json'
   updateUrl: 'https://api.pinboard.in/v1/posts/update'
+  addUrl: 'https://api.pinboard.in/v1/posts/add'
   ajaxOptions: {}
-  parse: (resp) -> resp
+
+  parse: (resp) ->
+    _.map resp, (post) ->
+      hash: post.hash
+      url: post.href
+      title: post.description
+      tags: post.tags
+      time: post.time
 
 
 ## Options
@@ -163,11 +200,11 @@ class BookmarkView extends Backbone.View
   click: (event) =>
     # If cmd- or ctrl-clicked, open the link in a new background tab.
     if event.metaKey or event.ctrlKey
-      chrome.tabs.create(url: @model.get('href'), selected: false)
+      chrome.tabs.create(url: @model.get('url'), selected: false)
     # Otherwise, open the link in the current tab and close the popup.
     else
       chrome.tabs.getSelected null, (tab) =>
-        chrome.tabs.update(tab.id, url: @model.get('href'))
+        chrome.tabs.update(tab.id, url: @model.get('url'))
       window.close()
     return false
 
@@ -250,6 +287,41 @@ class SearchView extends Backbone.View
       else
         _.defer(@updateResults)
         return true
+    return false
+
+
+# Add a new bookmark.
+class AddView extends Backbone.View
+  tagName: 'form'
+  className: 'add'
+  template: _.template($('#add-template').html())
+
+  render: ->
+    $(@el).html(@template())
+    chrome.tabs.getSelected null, (tab) =>
+      @$('[name=url]').val(tab.url)
+      @$('[name=title]').val(tab.title)
+    # TODO: suggest tags -- new view? tag.click adds to tags
+    # TODO: indicate if this URL has already been bookmarked
+    # TODO: tag autocomplete
+    return this
+
+  events:
+    'submit': 'save'
+
+  save: (event) =>
+    model =
+      url: @$('[name=url]').val()
+      title: @$('[name=title]').val()
+      tags: @$('[name=tags]').val()
+      private: @$('[name=private]').is(':checked')
+    # TODO: show some kind of loading animation; show errors
+    app.bookmarks.create model,
+      success: ->
+        window.close()
+      error: (msg) ->
+        msg = 'unknown error' unless _.isString(msg)
+        console.log(msg)
     return false
 
 
@@ -345,8 +417,7 @@ class BookmarksApp extends Backbone.Router
     @guard(=> @show(new SearchView(bookmarks: @bookmarks)))
 
   add: ->
-    bookmarklet = "vendor/bookmarklets/#{@options.service}.js"
-    chrome.tabs.executeScript(null, file: bookmarklet, -> window.close())
+    @guard(=> @show(new AddView))
 
   editOptions: ->
     @show(new OptionsView)

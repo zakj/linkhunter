@@ -16,9 +16,9 @@
 </script>
 
 <script id=bookmark-template type=text/template>
-  <img src="http://s2.googleusercontent.com/s2/favicons?domain_url={{ escape(href) }}" alt="">
-  <div class=title>{{ description }}</div>
-  <div class=href>{{ href }}</div>
+  <img src="http://s2.googleusercontent.com/s2/favicons?domain_url={{ escape(url) }}" alt="">
+  <div class=title>{{ title }}</div>
+  <div class=url>{{ url }}</div>
   <div class=age>{{ _date(time).fromNow() }}</div>
 </script>
 
@@ -47,6 +47,18 @@
 
   <a href=http://hellocabin.com/ target=_blank class=made-by>Made by Cabın</a>
 </script>
+
+
+<script id=add-template type=text/template>
+  <input rows=2 name=url placeholder=URL>
+  <input name=title placeholder=title>
+  <input name=tags placeholder=tags>
+  <label><input name=private type=checkbox> Private</label>
+  <button type=submit>
+    Add bookmark
+  </button>
+</script>
+
 
 <script src=vendor/jquery-1.6.4.min.js></script>
 <script src=vendor/underscore-min.js></script>
