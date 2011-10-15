@@ -301,7 +301,7 @@ class AddView extends Backbone.View
   render: ->
     $(@el).html(@template(app.options))
     chrome.tabs.getSelected null, (tab) =>
-      @$('.url').text(tab.url)
+      @$('.url .text').text(tab.url)
       @$('[name=url]').val(tab.url)
       @$('[name=title]').val(tab.title)
     # TODO: suggest tags -- new view? tag.click adds to tags
@@ -310,12 +310,20 @@ class AddView extends Backbone.View
     return this
 
   events:
-    'click .url': 'editUrl'
+    'click .url a': 'editUrl'
+    'mouseover .url a': 'hoverEditUrl'
+    'mouseout .url a': 'unhoverEditUrl'
     'submit': 'save'
 
   editUrl: (event) =>
     @$('.url').hide()
     @$('.edit-url').show()
+
+  hoverEditUrl: (event) =>
+    @$('.url a').addClass('hover')
+
+  unhoverEditUrl: (event) =>
+    @$('.url a').removeClass('hover')
 
   save: (event) =>
     model =
