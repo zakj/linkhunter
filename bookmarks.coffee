@@ -131,6 +131,8 @@ class DeliciousCollection extends BookmarkCollection
       success: (data) =>
         result = data.getElementsByTagName('result')[0].getAttribute('code')
         if result is 'done'
+          @add(model)
+          app.cache.reset(this)
           options.success?()
         else
           options.error?(result)
@@ -292,13 +294,14 @@ class SearchView extends Backbone.View
 
 # Add a new bookmark.
 class AddView extends Backbone.View
-  tagName: 'form'
+  tagName: 'div'
   className: 'add'
   template: _.template($('#add-template').html())
 
   render: ->
-    $(@el).html(@template())
+    $(@el).html(@template(app.options))
     chrome.tabs.getSelected null, (tab) =>
+      @$('.url').text(tab.url)
       @$('[name=url]').val(tab.url)
       @$('[name=title]').val(tab.title)
     # TODO: suggest tags -- new view? tag.click adds to tags
@@ -307,7 +310,12 @@ class AddView extends Backbone.View
     return this
 
   events:
+    'click .url': 'editUrl'
     'submit': 'save'
+
+  editUrl: (event) =>
+    @$('.url').hide()
+    @$('.edit-url').show()
 
   save: (event) =>
     model =
@@ -327,7 +335,7 @@ class AddView extends Backbone.View
 
 # The options panel.
 class OptionsView extends Backbone.View
-  tagName: 'form'
+  tagName: 'div'
   className: 'options'
   template: _.template($('#options-template').html())
 
