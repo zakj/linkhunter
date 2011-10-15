@@ -79,9 +79,11 @@
 a { text-decoration: none; }
 
 body {
+  -webkit-user-select: none;
   font-family: "Helvetica Neue", sans-serif;
-  padding: @body-padding;
   overflow-y: hidden;
+  padding: @body-padding;
+  width: @width + @body-padding * 2;
 }
 
 // A bug in Chrome causes the popup not to reduce its height to match the
@@ -97,6 +99,10 @@ html, body {
   }
 }
 
+img {
+  -webkit-user-drag: none;
+}
+
 input {
   border-radius: 5px;
   border: 1px solid @border-color;
@@ -107,6 +113,7 @@ input {
 }
 
 button, .button {
+  .small-caps-text;
   background: #eaeaea;
   border-radius: 4px;
   border: 1px solid @dark-border-color;
@@ -122,14 +129,6 @@ button, .button {
     background-color: #dfdfdf;
     box-shadow: inset 1px 1px #999;
   }
-}
-
-form {
-  -webkit-user-select: none;
-  width: @width;
-}
-img {
-  -webkit-user-drag: none;
 }
 
 
@@ -203,7 +202,7 @@ img {
     }
   }
 
-  .title, .href, .age {
+  .title, .url, .age {
     position: absolute;
   }
   .title {
@@ -213,7 +212,7 @@ img {
     top: @gutter;
     width: @width - @text-padding - (@gutter * 2);
   }
-  .href {
+  .url {
     .ellipsis;
     .medium-text;
     left: @text-padding;
@@ -228,12 +227,12 @@ img {
 }
 
 
-.options {
+.panel() {
   background: url(/images/texture.png);
   border-radius: 5px;
   border: 1px solid @border-color;
   overflow: hidden;
-  padding: (@gutter * 2) 69px (@gutter * 6);
+  padding-top: @gutter * 2;
   position: relative;
   h1 {
     text-align: center;
@@ -255,6 +254,163 @@ img {
   }
   h2.feedback {
     color: @salmon-color;
+  }
+  .close {
+    position: absolute;
+    top: @gutter;
+    right: @gutter;
+    width: 9px;
+    height: 10px;
+    background-image: url(/images/icon/close.png);
+    &:hover {
+      background-position: 0 -10px;
+    }
+  }
+  form {
+    margin: 0 auto;
+  }
+  input:not([type=checkbox]) {
+    border: 1px solid #d2d2d2;
+    box-shadow: inset 1px 1px 2px rgba(128, 128, 128, .2);
+    margin-bottom: @gutter;
+    width: 100%;
+  }
+  button {
+    display: block;
+    margin-top: @gutter;
+  }
+
+  // Animations for loading.
+  h1, h2 {
+    -webkit-transition: -webkit-transform .5s ease-in-out;
+  }
+  form {
+    -webkit-transition-property: -webkit-transform, opacity;
+    -webkit-transition-duration: .5s, 250ms;
+    -webkit-transition-delay: 0, 250ms;
+    -webkit-transition-easing: ease-in-out;
+  }
+  &.loading {
+    h1, h2 {
+      -webkit-transform: translateY(100px);
+    }
+    .logo {
+      background-image: url(/images/loading.gif);
+    }
+    form {
+      -webkit-transform: translateY(500px);
+      -webkit-transition-delay: 0, 0;
+      opacity: 0;
+    }
+  }
+  &.loading.done {
+    .logo {
+      background-image: url(/images/mark/48.png);
+    }
+  }
+}
+
+
+.add {
+  .panel;
+  font-size: 12px;
+  padding-bottom: @gutter * 4;
+
+  form {
+    padding: 0 25px;
+    position: relative;
+  }
+  fieldset {
+    .img-wrapper;
+    -webkit-transition: height 200ms;
+    height: 37px;
+    margin-bottom: @gutter;
+    padding: 4px;
+    width: 348px;
+  }
+  input:not([type=checkbox]) {
+    font-size: inherit;
+    font-weight: bold;
+    margin-bottom: 0;
+  }
+  input[type=checkbox] {
+    margin-right: 5px;
+  }
+  hr {
+    border-style: solid;
+    border-width: 1px 0;
+    border-top-color: @img-border-color;
+    border-bottom-color: @highlight-color;
+    margin: (@gutter * 1.5) 0;
+  }
+  label {
+    display: inline-block;
+    margin-bottom: @gutter;
+  }
+
+  .input-fade {
+    position: relative;
+    input {
+      padding-right: 0;
+    }
+    &:after {
+      background-image: -webkit-linear-gradient(
+        0deg, rgba(255,255,255,0), rgba(255,255,255,.95));
+      content: "";
+      display: block;
+      pointer-events: none;
+      position: absolute;
+      right: 1px; top: 6px;
+      width: 40px; height: 16px;
+    }
+  }
+
+  .edit-url {
+    display: none;
+    margin-top: @gutter / 2;
+  }
+
+  .url {
+    @sprite-size: 14px;
+    line-height: @sprite-size;
+    margin-top: @gutter * 1.5;
+    overflow: hidden;
+    .text, .icon {
+      cursor: pointer;
+      display: inline-block;
+    }
+    .text {
+      .ellipsis;
+      color: #bcbcbc;
+      float: left;
+      max-width: 310px;
+      padding-left: 7px;
+      text-shadow: #fff 1px 1px;
+      &.hover {
+        color: #999;
+      }
+    }
+    .icon {
+      background-image: url(/images/icon/edit.png);
+      background-position: left top;
+      background-repeat: no-repeat;
+      float: right;
+      margin-right: 5px;
+      width: @sprite-size; height: @sprite-size;
+      &.hover {
+        background-position: left -@sprite-size;
+      }
+    }
+  }
+}
+
+
+.options {
+  .panel;
+  padding-bottom: @gutter * 6;
+
+  form {
+    width: 260px;
   }
   #service {
     .img-wrapper;
@@ -279,42 +435,21 @@ img {
       position: relative;
       width: 58px; height: 26px;
     }
-    .nob {
+    .knob {
       -webkit-transition: left .1s;
-      background-image: url(/images/switch-nob.png);
+      background-image: url(/images/switch-knob.png);
       position: absolute;
       top: 2px; left: 3px;
       width: 22px; height: 22px;
     }
-    &.pinboard .nob {
+    &.pinboard .knob {
       left: 33px;
     }
     &.pinboard .pinboard, &.delicious .delicious {
       color: @text-color;
     }
   }
-  input {
-    border: 1px solid #d2d2d2;
-    box-shadow: inset 1px 1px 2px rgba(128, 128, 128, .2);
-    margin-bottom: @gutter;
-    width: 100%;
-  }
-  button {
-    .small-caps-text();
-    margin-top: @gutter;
-  }
 
-  .close {
-    position: absolute;
-    top: @gutter;
-    right: @gutter;
-    width: 9px;
-    height: 10px;
-    background-image: url(/images/close.png);
-    &:hover {
-      background-position: 0 -10px;
-    }
-  }
   .made-by {
     .italic-text;
     .light-text;
@@ -322,7 +457,7 @@ img {
     bottom: @gutter;
     right: @gutter;
     padding-right: 20px;
-    background-image: url(/images/trees.png);
+    background-image: url(/images/icon/trees.png);
     background-repeat: no-repeat;
     background-position: right top;
     padding-top: 4px;
@@ -330,30 +465,6 @@ img {
     &:hover {
       color: @salmon-color;
       background-position: right -15px;
-    }
-  }
-
-  // Animations for loading.
-  h1, h2 {
-    -webkit-transition: -webkit-transform .5s ease-in-out;
-  }
-  #service, input, button {
-    -webkit-transition-property: -webkit-transform, opacity;
-    -webkit-transition-duration: .5s, 250ms;
-    -webkit-transition-delay: 0, 250ms;
-    -webkit-transition-easing: ease-in-out;
-  }
-  &.loading {
-    h1, h2 {
-      -webkit-transform: translateY(100px);
-    }
-    .logo {
-      background-image: url(/images/loading.gif);
-    }
-    #service, input, button {
-      -webkit-transform: translateY(500px);
-      -webkit-transition-delay: 0, 0;
-      opacity: 0;
     }
   }
 }

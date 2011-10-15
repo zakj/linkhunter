@@ -9,16 +9,16 @@
 <script id=search-template type=text/template>
   <header>
     <input autofocus>
-    <a class=button href=#add><img src=/images/add-link.png width=14 height=14 alt="Add Bookmark"></a>
-    <a class=button href=#options><img src=/images/options.png width=14 height=14 alt="Settings"></a>
+    <a class=button href=#add><img src=/images/icon/add-link.png width=14 height=14 alt="Add Bookmark"></a>
+    <a class=button href=#options><img src=/images/icon/options.png width=14 height=14 alt="Settings"></a>
   </header>
   <ul></ul>
 </script>
 
 <script id=bookmark-template type=text/template>
-  <img src="http://s2.googleusercontent.com/s2/favicons?domain_url={{ encodeURI(href) }}" alt="">
-  <div class=title>{{ description }}</div>
-  <div class=href>{{ href }}</div>
+  <img src="http://s2.googleusercontent.com/s2/favicons?domain_url={{ encodeURI(url) }}" alt="">
+  <div class=title>{{ title }}</div>
+  <div class=url>{{ url }}</div>
   <div class=age>{{ _date(time).fromNow() }}</div>
 </script>
 
@@ -29,24 +29,51 @@
     <img src=/images/linkhunter.png alt=Linkhunter width=135 height=17>
   </h1>
   <h2>Find your links on Delicious or Pinboard.</h2>
-
   <a href=#search class=close></a>
 
-  <div id=service class={{ service }}>
-    <input name=service type=hidden value={{ service }}>
-    <a class=delicious>Delicious</a>
-    <span class=switch><span class=nob></span></span>
-    <a class=pinboard>Pinboard</a>
-  </div>
-  <input name=username placeholder=username value="{{ username }}">
-  <input name=password type=password placeholder=password value="{{ password }}">
+  <form>
+    <div id=service class={{ service }}>
+      <input name=service type=hidden value={{ service }}>
+      <a class=delicious>Delicious</a>
+      <span class=switch><span class=knob></span></span>
+      <a class=pinboard>Pinboard</a>
+    </div>
+    <input name=username placeholder=username value="{{ username }}">
+    <input name=password type=password placeholder=password value="{{ password }}">
 
-  <button type=submit>
-    Go hunting &nbsp;<img src=/images/arrow-right.png width=15 height=6 alt="">
-  </button>
+    <button type=submit>
+      Go hunting &nbsp;<img src=/images/icon/arrow-right.png width=15 height=6 alt="">
+    </button>
+  </form>
 
   <a href=http://hellocabin.com/ target=_blank class=made-by>Made by Cabın</a>
 </script>
+
+
+<script id=add-template type=text/template>
+  <h1>
+    <div class=logo></div>
+    <img src=/images/add-link.png alt="Add Link" width=106 height=18>
+  </h1>
+  <h2 class=feedback>&nbsp;</h2>
+  <a href=#search class=close></a>
+
+  <form>
+    <fieldset>
+      <div class=input-fade><input name=title placeholder=title></div>
+      <div class="input-fade edit-url"><input name=url placeholder=URL></div>
+    </fieldset>
+    <div class=url><a class=text></a><a class=icon></a></div>
+    <hr>
+    <fieldset>
+      <input name=tags placeholder="add tags">
+    </fieldset>
+    <hr>
+    <label><input name=private type=checkbox> This link is private</label>
+    <button type=submit>Save to {{ service }}</button>
+  </form>
+</script>
+
 
 <script src=vendor/jquery-1.6.4.min.js></script>
 <script src=vendor/underscore-min.js></script>
