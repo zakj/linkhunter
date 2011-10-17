@@ -12,14 +12,14 @@ class CollectionCache
     @models = if store then JSON.parse(store) else []
     @lastUpdated = _.date(localStorage.getItem('lastUpdated') or 0)
 
-  save: ->
+  save: (collection) =>
+    @models = collection.models
     localStorage.setItem(@name, JSON.stringify(@models))
+
+  update: (collection) =>
+    @save(collection)
     @lastUpdated = _.date()
     localStorage.setItem('lastUpdated', @lastUpdated.date)
-
-  reset: (collection) =>
-    @models = collection.models
-    @save()
 
 
 ## Models and Collections
@@ -69,6 +69,17 @@ class BookmarkCollection extends Backbone.Collection
   fetch: (options = {}) ->
     super(_.defaults(options, @settings))
 
+  # Handle re-adding an existing bookmark, or delegate to the superclass's
+  # `add`.
+  add: (model, options) ->
+    # Detect an existing bookmark by matching the URL. If one exists, just
+    # update it with the new model's attributes. Otherwise, add as usual.
+    previous = @find (bookmark) -> model.get('url') is bookmark.get('url')
+    if previous
+      previous.set(model.attributes)
+    else
+      super(model, options)
+
   # Return a list of the most recent bookmarks.
   recent: (n = @maxResults) =>
     @first(n)
@@ -106,6 +117,7 @@ class DeliciousCollection extends BookmarkCollection
       url: post.getAttribute('href')
       tags: post.getAttribute('tags')
       time: post.getAttribute('time')
+      private: post.getAttribute('shared') is 'no'
 
   fetchIfUpdatedSince: (date) ->
     settings = _.extend _.clone(@settings),
@@ -132,7 +144,7 @@ class DeliciousCollection extends BookmarkCollection
         result = data.getElementsByTagName('result')[0].getAttribute('code')
         if result is 'done'
           @add(model)
-          app.cache.reset(this)
+          app.cache.save(this)
           options.success?()
         else
           options.error?(result)
@@ -155,6 +167,7 @@ class PinboardCollection extends DeliciousCollection
       title: post.description
       tags: post.tags
       time: post.time
+      private: post.shared is 'no'
 
 
 ## Options
@@ -309,8 +322,15 @@ class AddView extends Backbone.View
       @$('.url .text').text(tab.url)
       @$('[name=url]').val(tab.url)
       @$('[name=title]').val(tab.title)
+      previous = app.bookmarks.find (bookmark) ->
+        bookmark.get('url') is tab.url
+      if previous
+        ago = _.date(previous.get('time')).fromNow()
+        @$('h2').text("You added this link #{ago}.")
+        @$('[name=title]').val(previous.get('title'))
+        @$('[name=tags]').val(previous.get('tags'))
+        @$('[name=private]').attr('checked', previous.get('private'))
     # TODO: suggest tags -- new view? tag.click adds to tags
-    # TODO: indicate if this URL has already been bookmarked
     # TODO: tag autocomplete
     return this
 
@@ -433,7 +453,7 @@ class BookmarksApp extends Backbone.Router
 
   loadCollection: ->
     @bookmarks = @options.createCollection(@cache.models)
-    @bookmarks?.bind('reset', @cache.reset)
+    @bookmarks?.bind('reset', @cache.update)
 
   # Render `view` and make it visible, removing any previous view.
   show: (view) ->
