@@ -268,7 +268,7 @@ class SearchView extends Backbone.View
 
   initialize: (options) ->
     @bookmarks = options.bookmarks
-    @bookmarks.bind('reset', @render)
+    @bookmarks.bind('reset', @updateResults)
 
   render: =>
     $(@el).html(@template())
