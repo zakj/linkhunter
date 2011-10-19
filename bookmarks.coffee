@@ -318,6 +318,12 @@ class AddView extends Backbone.View
 
   render: ->
     $(@el).html(@template(app.options))
+    oldTagsInput = @$('[name=tags]')
+    @tagsView = new TagInputView
+      name: 'tags'
+      placeholder: oldTagsInput.attr('placeholder')
+    oldTagsInput.replaceWith(@tagsView.render().el)
+    _.defer(=> @tagsView.input.focus())
     chrome.tabs.getSelected null, (tab) =>
       @$('.url .text').text(tab.url)
       @$('[name=url]').val(tab.url)
@@ -328,7 +334,7 @@ class AddView extends Backbone.View
         ago = _.date(previous.get('time')).fromNow()
         @$('h2').text("You added this link #{ago}.")
         @$('[name=title]').val(previous.get('title'))
-        @$('[name=tags]').val(previous.get('tags'))
+        @tagsView.val(previous.get('tags'))
         @$('[name=private]').attr('checked', previous.get('private'))
     # TODO: suggest tags -- new view? tag.click adds to tags
     # TODO: tag autocomplete
@@ -370,7 +376,7 @@ class AddView extends Backbone.View
     model =
       url: @$('[name=url]').val()
       title: @$('[name=title]').val()
-      tags: @$('[name=tags]').val()
+      tags: @tagsView.val()
       private: @$('[name=private]').is(':checked')
     $(@el).addClass('loading')
     app.bookmarks.create model,
@@ -384,6 +390,107 @@ class AddView extends Backbone.View
         msg = @errorMessages[data] or @errorMessages.default
         @$('h2').text(msg)
     return false
+
+
+class TagInputView extends Backbone.View
+  tagName: 'div'
+  className: 'pseudo-input'
+
+  initialize: (options) ->
+    @name = options.name
+    @value = options.value
+    @placeholderText = options.placeholder
+    @delimiter = options.delimiter or ' '
+
+  render: ->
+    @tags = $(@make('ul', class: 'tags'))
+    @input = $(@make('input', name: @name, value: @value))
+    @placeholder = $(@make('span', class: 'placeholder', @placeholderText))
+    $(@el).append(@tags, @input, @placeholder)
+    _.defer(@fitInputToContents)
+    return this
+
+  events:
+    'click': 'focusInput'
+    'keydown input': 'handleKeyDown'
+    'keypress input': 'handleKeyPress'
+    'blur input': 'extractTag'
+    'click .tags li': 'removeTag'
+
+  focusInput: (event) =>
+    @input.focus()
+
+  handleKeyDown: (event) =>
+    # If a user presses backspace when the input box is empty, unextract the
+    # last stored tag for editing.
+    if event.keyCode is 8 and @input.val() is ''
+      @unextractTag()
+      return false
+    # If a user presses enter in the input box, ensure any entered text is
+    # extracted.
+    if event.keyCode is 13
+      @extractTag()
+    # Defer resizing the input until its value has been updated for this
+    # keypress. Calling fitInputToContents in a keyup handler makes more sense,
+    # but this method reduces visual lag.
+    _.defer(@fitInputToContents)
+
+  # If a user presses the delimiter key, extract the tag rather than inserting
+  # the delimiter.
+  handleKeyPress: (event) =>
+    if event.keyCode is @delimiter.charCodeAt(0)
+      @extractTag(@input.get(0).selectionStart)
+      return false
+
+  # Extract `length` characters from the beginning of the input box into a new
+  # tag object. If `length` is not given, extract the entire input.
+  extractTag: (length) =>
+    length = @input.val().length unless _.isNumber(length)
+    tag = @input.val().slice(0, length).trim()
+    if tag
+      remainder = @input.val().slice(length).trim()
+      @input.val(remainder)
+      @add(tag)
+
+  removeTag: (event) =>
+    $(event.currentTarget).remove()
+
+  add: (tag) ->
+    @tags.append(@make('li', {}, tag))
+
+  # Emulate jQuery's `val` method; when passed a delimited list of tags, set
+  # the tags list appropriate. When called with no argument, return the list of
+  # tags as a delimited string.
+  val: (tags) =>
+    if tags?
+      @placeholder.hide() unless tags is ''
+      @tags.empty()
+      _.each tags.split(@delimiter), (tag) => @add(tag) if tag
+    else
+      _.map(@tags.children(), (tag) -> tag.textContent).join(@delimiter)
+
+  # Remove the last tag from the tag list (if any) and place its value in the
+  # input. Re-fit the input when done.
+  unextractTag: ->
+    tag = @tags.children().last().remove().text().trim()
+    @input.val(tag)
+    _.defer(@fitInputToContents)
+
+  # Resize the input to just fit its contents, while remaining small enough to
+  # fit inside its container. To calculate the content width, create a
+  # temporary invisible div with the same class and contents and measure it.
+  fitInputToContents: =>
+    padding = 30
+    @placeholder.hide() unless @input.val() is ''
+    fake = $('<div/>').addClass('pseudo-input').css
+      position: 'absolute'
+      left: -9999
+      top: -9999
+      whiteSpace: 'nowrap'
+      width: 'auto'
+    fake.text(@input.val()).appendTo(@el)
+    @input.css(width: Math.min(fake.width() + padding, $(@el).width()))
+    fake.remove()
 
 
 # The options panel.

@@ -103,13 +103,18 @@ img {
   -webkit-user-drag: none;
 }
 
-input {
+input, .pseudo-input {
+  background: white;
   border-radius: 5px;
   border: 1px solid @border-color;
   box-shadow: inset 1px 1px 2px rgba(128, 128, 128, .1);
+  font-family: inherit;
   font-size: 16px;
   outline: none;
   padding: 5px @gutter;
+}
+input::-webkit-input-placeholder, .pseudo-input .placeholder {
+  color: #aaa;
 }
 
 button, .button {
@@ -269,7 +274,7 @@ button, .button {
   form {
     margin: 0 auto;
   }
-  input:not([type=checkbox]) {
+  input:not([type=checkbox]), .pseudo-input {
     border: 1px solid #d2d2d2;
     box-shadow: inset 1px 1px 2px rgba(128, 128, 128, .2);
     margin-bottom: @gutter;
@@ -323,15 +328,15 @@ button, .button {
   fieldset {
     .img-wrapper;
     -webkit-transition: height 200ms;
-    height: 37px;
     margin-bottom: @gutter;
     padding: 4px;
     width: 348px;
   }
-  input:not([type=checkbox]) {
+  input:not([type=checkbox]), .pseudo-input {
     font-size: inherit;
     font-weight: bold;
     margin-bottom: 0;
+    padding-left: 6px;
   }
   input[type=checkbox] {
     margin-right: 5px;
@@ -346,6 +351,10 @@ button, .button {
   label {
     display: inline-block;
     margin-bottom: @gutter;
+  }
+
+  fieldset.title {
+    height: 37px;
   }
 
   .input-fade {
@@ -400,6 +409,49 @@ button, .button {
       &.hover {
         background-position: left -@sprite-size;
       }
+    }
+  }
+
+  .pseudo-input {
+    cursor: text;
+    min-height: 29px;
+    padding: 4px 4px 0 0;
+    position: relative;
+    .placeholder {
+      position: absolute;
+      left: 15px;
+      top: 6px;
+    }
+    .tags {
+      display: inline;
+      li {
+        background: @highlight-color;
+        border-radius: 2px;
+        border: 1px solid @border-color;
+        cursor: pointer;
+        display: inline-block;
+        font-weight: normal;
+        margin-bottom: 4px;
+        margin-left: 4px;
+        padding: 1px 5px;
+        position: relative;
+        // Emulate strike-through effect, but in a different color from the
+        // text and extending beyond the text.
+        &:hover:after {
+          background-color: @salmon-color;
+          height: 1px;
+          content: "";
+          position: absolute;
+          left: 3px; right: 3px; top: 8px;
+        }
+      }
+    }
+    input {
+      border: none;
+      box-shadow: none;
+      margin: 2px 0 4px;
+      padding: 0;
+      padding-left: 6px;
     }
   }
 }
