@@ -115,7 +115,7 @@ class DeliciousCollection extends BookmarkCollection
       hash: post.getAttribute('hash')
       title: post.getAttribute('description')
       url: post.getAttribute('href')
-      tags: post.getAttribute('tags')
+      tags: post.getAttribute('tag')
       time: post.getAttribute('time')
       private: post.getAttribute('shared') is 'no'
 
