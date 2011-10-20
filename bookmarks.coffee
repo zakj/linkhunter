@@ -318,11 +318,11 @@ class AddView extends Backbone.View
 
   render: ->
     $(@el).html(@template(app.options))
-    oldTagsInput = @$('[name=tags]')
-    @tagsView = new TagInputView
+    oldTags = @$('fieldset.tags')
+    @tagsView = new TagsView
       name: 'tags'
-      placeholder: oldTagsInput.attr('placeholder')
-    oldTagsInput.replaceWith(@tagsView.render().el)
+      placeholder: oldTags.find('input').attr('placeholder')
+    oldTags.replaceWith(@tagsView.render().el)
     _.defer(=> @tagsView.input.focus())
     chrome.tabs.getSelected null, (tab) =>
       @$('.url .text').text(tab.url)
@@ -392,26 +392,28 @@ class AddView extends Backbone.View
     return false
 
 
-class TagInputView extends Backbone.View
-  tagName: 'div'
-  className: 'pseudo-input'
+class TagsView extends Backbone.View
+  tagName: 'fieldset'
+  className: 'tags'
+  template: _.template($('#tags-template').html())
 
   initialize: (options) ->
-    @name = options.name
-    @value = options.value
-    @placeholderText = options.placeholder
+    @templateData =
+      name: options.name
+      value: options.value
+      placeholder: options.placeholder
     @delimiter = options.delimiter or ' '
 
   render: ->
-    @tags = $(@make('ul', class: 'tags'))
-    @input = $(@make('input', name: @name, value: @value))
-    @placeholder = $(@make('span', class: 'placeholder', @placeholderText))
-    $(@el).append(@tags, @input, @placeholder)
+    $(@el).html(@template(@templateData))
+    @input = @$('input')
+    @tags = @$('ul.tags')
+    @placeholder = @$('.placeholder')
     _.defer(@fitInputToContents)
     return this
 
   events:
-    'click': 'focusInput'
+    'click .pseudo-input': 'focusInput'
     'keydown input': 'handleKeyDown'
     'keypress input': 'handleKeyPress'
     'blur input': 'extractTag'

@@ -65,13 +65,22 @@
     </fieldset>
     <div class=url><a class=text></a><a class=icon></a></div>
     <hr>
-    <fieldset>
+    <fieldset class=tags>
       <input name=tags placeholder="add tags">
     </fieldset>
     <hr>
     <label><input name=private type=checkbox> This link is private</label>
     <button type=submit>Save to {{ service }}</button>
   </form>
+</script>
+
+
+<script id=tags-template type=text/template>
+  <div class=pseudo-input>
+    <ul class=tags></ul>
+    <input name="{{ name }}" value="{{ value }}">
+    <span class=placeholder>{{ placeholder }}</span>
+  </div>
 </script>
 
 
