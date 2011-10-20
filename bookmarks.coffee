@@ -4,6 +4,8 @@
 _.templateSettings = {interpolate: /\{\{ *(.+?) *\}\}/g}
 
 
+### CollectionCache ###
+
 # A simple wrapper around `localStorage` to handle JSON conversion.
 class CollectionCache
 
@@ -23,6 +25,8 @@ class CollectionCache
 
 
 ## Models and Collections
+
+### Bookmark ###
 
 class Bookmark extends Backbone.Model
 
@@ -44,19 +48,23 @@ class BookmarkCollection extends Backbone.Collection
   # Subclasses should implement a `fetchIfUpdatedSince` method. It must accept
   # one _.date argument, and call `fetch` if the remote data has been updated
   # since that time.
-  fetchIfUpdatedSince: -> throw 'Not implemented'
+  fetchIfUpdatedSince: (date) -> throw 'Not implemented'
   # Subclasses should implement an `isAuthValid` method. It must accept one
   # callback argument, calling it with a boolean reporting whether the given
   # username and password are correct.
-  isAuthValid: -> throw 'Not implemented'
+  isAuthValid: (callback) -> throw 'Not implemented'
   # Subclasses should implement a `create` method which takes a model (or
   # model-like object), creates it via the appropriate API calls, and adds it
   # to the collection.
-  create: -> throw 'Not implemented'
+  create: (model) -> throw 'Not implemented'
   # Subclasses may set an ajaxOptions attribute, which will be passed to
   # `fetch`. This is mostly useful for controlling `dataType` in one place.
   ajaxOptions: {}
+  # Subclasses may implement a `suggestTags` method which takes a URL and a
+  # callback. The `suggestTags` should call the callback with an array of tags
+  # as the only argument.
 
+  # Set up reusable settings for calls to `jQuery.ajax`.
   initialize: (models, options) ->
     @settings = _.defaults options, @ajaxOptions,
       error: (jqXHR, textStatus, errorThrown) ->
@@ -89,9 +97,9 @@ class BookmarkCollection extends Backbone.Collection
     # Words in the query string are separated by whitespace and/or commas. A
     # bookmark must match all given words to be considered a valid result.
     regexps = (new RegExp(word, 'i') for word in query.split(/[, ]+/))
-    # Limit the results to maxResults; abuse _.detect for this purpose because
-    # there's no way to exit early from _.filter and there's no point
-    # traversing thousands of bookmarks once we've already found maxResults.
+    # Limit the results to `maxResults`; abuse `_.detect` for this purpose
+    # because there's no way to exit early from `_.filter` and there's no point
+    # traversing thousands of bookmarks once we've already found `maxResults`.
     results = []
     @detect (m) =>
       # Search through both tags and title.
@@ -100,6 +108,8 @@ class BookmarkCollection extends Backbone.Collection
       return results.length >= @maxResults
     return results
 
+
+### DeliciousCollection ###
 
 # <http://www.delicious.com/help/api>
 class DeliciousCollection extends BookmarkCollection
@@ -153,6 +163,7 @@ class DeliciousCollection extends BookmarkCollection
     return model
 
 
+# Mostly matches `DeliciousCollection`.
 # <http://pinboard.in/api>
 class PinboardCollection extends DeliciousCollection
   url: 'https://api.pinboard.in/v1/posts/all?format=json'
@@ -200,6 +211,8 @@ class Options
 
 ## Views
 
+### BookmarkView ###
+
 # Display a single bookmark as a clickable element.
 class BookmarkView extends Backbone.View
   tagName: 'li'
@@ -223,6 +236,8 @@ class BookmarkView extends Backbone.View
       window.close()
     return false
 
+
+### BookmarksView ###
 
 # Display a list of bookmarks and track the currently-selected one.
 class BookmarksView extends Backbone.View
@@ -258,6 +273,8 @@ class BookmarksView extends Backbone.View
   visitSelected: =>
     @selected.click()
 
+
+### SearchView ###
 
 # The main application view. Handles the search input box and displays results
 # using a BookmarksView.
@@ -304,6 +321,8 @@ class SearchView extends Backbone.View
         return true
     return false
 
+
+### AddView ###
 
 # Add a new bookmark.
 class AddView extends Backbone.View
@@ -392,6 +411,9 @@ class AddView extends Backbone.View
     return false
 
 
+### TagsView ###
+
+# Handle adding/removing tags and displaying suggested tags.
 class TagsView extends Backbone.View
   tagName: 'fieldset'
   className: 'tags'
@@ -494,6 +516,8 @@ class TagsView extends Backbone.View
     @input.css(width: Math.min(fake.width() + padding, $(@el).width()))
     fake.remove()
 
+
+### OptionsView ###
 
 # The options panel.
 class OptionsView extends Backbone.View
