@@ -119,6 +119,7 @@ class DeliciousCollection extends BookmarkCollection
     dataType: 'xml'
   updateUrl: 'https://api.del.icio.us/v1/posts/update'
   addUrl: 'https://api.del.icio.us/v1/posts/add'
+  suggestUrl: 'https://api.del.icio.us/v1/posts/suggest'
 
   parse: (resp) ->
     _.map resp.getElementsByTagName('post'), (post) ->
@@ -162,6 +163,18 @@ class DeliciousCollection extends BookmarkCollection
     $.ajax(@addUrl, settings)
     return model
 
+  suggestTags: (url, callback) ->
+    settings = _.extend _.clone(@settings),
+      data: {url: url}
+      success: (data) =>
+        callback(_.uniq(@parseSuggestedTags(data)))
+    $.ajax(@suggestUrl, settings)
+
+  parseSuggestedTags: (resp) ->
+    _.map $(resp).find('popular, recommended, network'), (node) ->
+      node.getAttribute('tag')
+
+### PinboardCollection ###
 
 # Mostly matches `DeliciousCollection`.
 # <http://pinboard.in/api>
@@ -169,6 +182,7 @@ class PinboardCollection extends DeliciousCollection
   url: 'https://api.pinboard.in/v1/posts/all?format=json'
   updateUrl: 'https://api.pinboard.in/v1/posts/update'
   addUrl: 'https://api.pinboard.in/v1/posts/add'
+  suggestUrl: 'https://api.pinboard.in/v1/posts/suggest'
   ajaxOptions: {}
 
   parse: (resp) ->
@@ -179,6 +193,10 @@ class PinboardCollection extends DeliciousCollection
       tags: post.tags
       time: post.time
       private: post.shared is 'no'
+
+  parseSuggestedTags: (resp) ->
+    _.map $(resp).find('popular, recommended'), (node) ->
+      node.textContent
 
 
 ## Options
@@ -344,6 +362,8 @@ class AddView extends Backbone.View
     oldTags.replaceWith(@tagsView.render().el)
     _.defer(=> @tagsView.input.focus())
     chrome.tabs.getSelected null, (tab) =>
+      app.bookmarks.suggestTags? tab.url, (tags) =>
+        @tagsView.addSuggested(tag) for tag in tags
       @$('.url .text').text(tab.url)
       @$('[name=url]').val(tab.url)
       @$('[name=title]').val(tab.title)
@@ -416,7 +436,6 @@ class AddView extends Backbone.View
 # Handle adding/removing tags and displaying suggested tags.
 class TagsView extends Backbone.View
   tagName: 'fieldset'
-  className: 'tags'
   template: _.template($('#tags-template').html())
 
   initialize: (options) ->
@@ -431,6 +450,7 @@ class TagsView extends Backbone.View
     @input = @$('input')
     @tags = @$('ul.tags')
     @placeholder = @$('.placeholder')
+    @suggestedTags = @$('ul.suggested-tags')
     _.defer(@fitInputToContents)
     return this
 
@@ -481,6 +501,9 @@ class TagsView extends Backbone.View
 
   add: (tag) ->
     @tags.append(@make('li', {}, tag))
+
+  addSuggested: (tag) ->
+    @suggestedTags.append(@make('li', {}, tag))
 
   # Emulate jQuery's `val` method; when passed a delimited list of tags, set
   # the tags list appropriate. When called with no argument, return the list of
