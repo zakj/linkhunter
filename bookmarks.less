@@ -423,36 +423,47 @@ button, .button {
       left: 15px;
       top: 6px;
     }
-    .tags {
-      display: inline;
-      li {
-        background: @highlight-color;
-        border-radius: 2px;
-        border: 1px solid @border-color;
-        cursor: pointer;
-        display: inline-block;
-        font-weight: normal;
-        margin-bottom: 4px;
-        margin-left: 4px;
-        padding: 1px 5px;
-        position: relative;
-        // Emulate strike-through effect, but in a different color from the
-        // text and extending beyond the text.
-        &:hover:after {
-          background-color: @salmon-color;
-          height: 1px;
-          content: "";
-          position: absolute;
-          left: 3px; right: 3px; top: 8px;
-        }
-      }
-    }
     input {
       border: none;
       box-shadow: none;
       margin: 2px 0 4px;
       padding: 0;
       padding-left: 6px;
+    }
+  }
+
+  .tags, .suggested-tags {
+    display: inline;
+    li {
+      background: @background-color;
+      border-radius: 2px;
+      border: 1px solid @medium-border-color;
+      cursor: pointer;
+      display: inline-block;
+      padding: 1px 5px;
+    }
+  }
+  .tags li {
+    font-weight: normal;
+    margin-bottom: 4px;
+    margin-left: 4px;
+    // Emulate strike-through effect, but in a different color from the
+    // text and extending beyond the text.
+    position: relative;
+    &:hover:after {
+      background-color: @salmon-color;
+      height: 1px;
+      content: "";
+      position: absolute;
+      left: 3px; right: 3px; top: 8px;
+    }
+  }
+  .suggested-tags li {
+    color: #aaa;
+    margin-top: 4px;
+    margin-right: 4px;
+    &:hover {
+      color: @text-color;
     }
   }
 }

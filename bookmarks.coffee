@@ -460,6 +460,7 @@ class TagsView extends Backbone.View
     'keypress input': 'handleKeyPress'
     'blur input': 'extractTag'
     'click .tags li': 'removeTag'
+    'click .suggested-tags li': 'addFromSuggested'
 
   focusInput: (event) =>
     @input.focus()
@@ -499,18 +500,25 @@ class TagsView extends Backbone.View
   removeTag: (event) =>
     $(event.currentTarget).remove()
 
+  # Handle a click on a suggested tag by adding the tag to the list. Set up a
+  # click handler for the newly-added tag to restore visibility to the
+  # suggested tag.
+  addFromSuggested: (event) =>
+    suggested = $(event.currentTarget)
+    @add(suggested.hide().text()).click -> suggested.show()
+
   add: (tag) ->
-    @tags.append(@make('li', {}, tag))
+    @placeholder.hide()
+    $(@make('li', {}, tag)).appendTo(@tags)
 
   addSuggested: (tag) ->
-    @suggestedTags.append(@make('li', {}, tag))
+    @suggestedTags.append(@make('li', {id: _.uniqueId()}, tag))
 
   # Emulate jQuery's `val` method; when passed a delimited list of tags, set
   # the tags list appropriate. When called with no argument, return the list of
   # tags as a delimited string.
   val: (tags) =>
     if tags?
-      @placeholder.hide() unless tags is ''
       @tags.empty()
       _.each tags.split(@delimiter), (tag) => @add(tag) if tag
     else
