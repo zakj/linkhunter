@@ -13,9 +13,9 @@
     "default_popup": "popup.html"
   },
   "permissions": [
-      "https://api.del.icio.us/*",
-      "https://api.pinboard.in/*",
-      "chrome://favicon/",
-      "tabs"
+    "https://api.del.icio.us/*",
+    "https://api.pinboard.in/*",
+    "chrome://favicon/",
+    "tabs"
   ]
 }
