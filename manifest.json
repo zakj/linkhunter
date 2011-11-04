@@ -12,5 +12,10 @@
     "default_title": "Linkhunter",
     "default_popup": "popup.html"
   },
-  "permissions": ["*://*/*", "tabs"]
+  "permissions": [
+      "https://api.del.icio.us/*",
+      "https://api.pinboard.in/*",
+      "chrome://favicon/",
+      "tabs"
+  ]
 }
