@@ -4,24 +4,35 @@
 _.templateSettings = {interpolate: /\{\{ *(.+?) *\}\}/g}
 
 
-### CollectionCache ###
+### CachedCollection ###
 
-# A simple wrapper around `localStorage` to handle JSON conversion.
-class CollectionCache
+# A Backbone `Collection` backed by a `localStorage` cache; it also tracks the
+# timestamp of its last update from its authoritative data source.
+class CachedCollection extends Backbone.Collection
+  # Subclasses must include a `name` attribute, to be used as the local storage
+  # item's key.
+  name: undefined
 
-  constructor: (@name) ->
-    store = localStorage.getItem(@name)
-    @models = if store then JSON.parse(store) else []
-    @lastUpdated = _.date(localStorage.getItem('lastUpdated') or 0)
+  # When the collection's data is reset, also update the cache. If no models
+  # are passed to `initialize`, initialize from the cache.
+  initialize: (models, options) ->
+    @bind('reset', @_updateCache)
+    unless models.length
+      store = localStorage.getItem(@name)
+      if store
+        @models = (new @model(obj) for obj in JSON.parse(store))
+    @_lastUpdatedKey = "#{@name}:lastUpdated"
+    @lastUpdated = _.date(localStorage.getItem(@_lastUpdatedKey) or 0)
 
-  save: (collection) =>
-    @models = collection.models
+  # Save the collection's models to the cache.
+  _saveCache: =>
     localStorage.setItem(@name, JSON.stringify(@models))
 
-  update: (collection) =>
-    @save(collection)
+  # Save the models and a new last-updated timestamp.
+  _updateCache: =>
+    @_saveCache()
     @lastUpdated = _.date()
-    localStorage.setItem('lastUpdated', @lastUpdated.date)
+    localStorage.setItem(@_lastUpdatedKey, @lastUpdated.date)
 
 
 ## Models and Collections
@@ -41,14 +52,14 @@ class Bookmark extends Backbone.Model
 
 # Superclass for cloud bookmark service backends. Subclasses should set `url`
 # and `parse` as usual for Backbone collections.
-class BookmarkCollection extends Backbone.Collection
+class BookmarkCollection extends CachedCollection
+  name: 'bookmarks'
   model: Bookmark
   maxResults: 10
 
-  # Subclasses should implement a `fetchIfUpdatedSince` method. It must accept
-  # one _.date argument, and call `fetch` if the remote data has been updated
-  # since that time.
-  fetchIfUpdatedSince: (date) -> throw 'Not implemented'
+  # Subclasses should implement a `fetchIfStale` method. It must call `fetch`
+  # if the remote data has been updated since `@lastUpdated`.
+  fetchIfStale: -> throw 'Not implemented'
   # Subclasses should implement an `isAuthValid` method. It must accept one
   # callback argument, calling it with a boolean reporting whether the given
   # username and password are correct.
@@ -66,6 +77,7 @@ class BookmarkCollection extends Backbone.Collection
 
   # Set up reusable settings for calls to `jQuery.ajax`.
   initialize: (models, options) ->
+    super(models, options)
     @settings = _.defaults options, @ajaxOptions,
       error: (jqXHR, textStatus, errorThrown) ->
         console.log('error!', jqXHR, textStatus, errorThrown)  # TODO
@@ -130,10 +142,10 @@ class DeliciousCollection extends BookmarkCollection
       time: post.getAttribute('time')
       private: post.getAttribute('shared') is 'no'
 
-  fetchIfUpdatedSince: (date) ->
+  fetchIfStale: ->
     settings = _.extend _.clone(@settings),
       success: (data) =>
-        @fetch() if _.date($(data).find('update').attr('time')) > date
+        @fetch() if _.date($(data).find('update').attr('time')) > @lastUpdated
     $.ajax(@updateUrl, settings)
 
   isAuthValid: (callback) ->
@@ -155,7 +167,7 @@ class DeliciousCollection extends BookmarkCollection
         result = data.getElementsByTagName('result')[0].getAttribute('code')
         if result is 'done'
           @add(model)
-          app.cache.save(this)
+          @_saveCache()
           options.success?()
         else
           options.error?(result)
@@ -215,16 +227,14 @@ class Options
     property 'service', -> localStorage.service or 'delicious'
     property 'username', -> localStorage.username
     property 'password', -> localStorage.password
-    property 'firstRun', -> not localStorage.service?
     property 'validCredentials', -> localStorage.validCredentials is 'true'
 
   # Create a collection instance using the class defined by `service`.
-  createCollection: (models = []) ->
-    unless @firstRun
-      new @serviceCollections[@service] models,
-        username: @username
-        password: @password
-        valid: @validCredentials
+  createCollection: ->
+    new @serviceCollections[@service] [],
+      username: @username
+      password: @password
+      valid: @validCredentials
 
 
 ## Views
@@ -610,14 +620,12 @@ class BookmarksApp extends Backbone.Router
   # request for updates in the background.
   initialize: ->
     @options = new Options
-    @cache = new CollectionCache('bookmarks')
     @loadCollection()
-    @bookmarks?.fetchIfUpdatedSince(@cache.lastUpdated)
+    @bookmarks?.fetchIfStale()
     @panel = $('#panel')
 
   loadCollection: ->
-    @bookmarks = @options.createCollection(@cache.models)
-    @bookmarks?.bind('reset', @cache.update)
+    @bookmarks = @options.createCollection()
 
   # Render `view` and make it visible, removing any previous view.
   show: (view) ->
