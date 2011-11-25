@@ -1,43 +1,71 @@
-## Utilities
+## BackgroundStorage
 
-# Use Mustache-style templates.
-_.templateSettings = {interpolate: /\{\{ *(.+?) *\}\}/g}
+# Expose a localStorage-like interface to the extension's background page,
+# except that `getItem` and `setItem` return `Promise` objects.
+class BackgroundStorage
+
+  _promiseRequest: (message) ->
+    d = new $.Deferred
+    chrome.extension.sendRequest(message, d.resolve)
+    d.promise()
+
+  getItem: (key) ->
+    @_promiseRequest(method: 'getItem', key: key)
+
+  setItem: (key, value) ->
+    @_promiseRequest(method: 'setItem', key: key, value: value)
+
+bgStorage = new BackgroundStorage
 
 
-### CachedCollection ###
+## CachedCollection
 
-# A Backbone `Collection` backed by a `localStorage` cache; it also tracks the
-# timestamp of its last update from its authoritative data source.
+# A Backbone `Collection` backed by a local cache; it also tracks the timestamp
+# of its last update from its authoritative data source.
 class CachedCollection extends Backbone.Collection
-  # Subclasses must include a `name` attribute, to be used as the local storage
+  # Subclasses must include a `name` attribute, to be used as the local cache
   # item's key.
   name: undefined
 
   # When the collection's data is reset, also update the cache. If no models
-  # are passed to `initialize`, initialize from the cache.
+  # are passed to `initialize`, initialize from the cache. Manage a @loaded
+  # promise to notify users when all required data has loaded from storage.
   initialize: (models, options) ->
-    @bind('reset', @_updateCache)
+    d = new $.Deferred
+    @loaded = d.promise()
+    needModels = false
+    needUpdated = true
+    resolve = => d.resolve() unless needModels or needUpdated
     unless models.length
-      store = localStorage.getItem(@name)
-      if store
-        @models = (new @model(obj) for obj in JSON.parse(store))
+      needModels = true
+      bgStorage.getItem(@name).then (store) =>
+        if store
+          @models = (new @model(obj) for obj in JSON.parse(store))
+        needModels = false
+        resolve()
+        @trigger('reset')
     @_lastUpdatedKey = "#{@name}:lastUpdated"
-    @lastUpdated = _.date(localStorage.getItem(@_lastUpdatedKey) or 0)
+    bgStorage.getItem(@_lastUpdatedKey).then (lastUpdated) =>
+      @lastUpdated = _.date(lastUpdated or 0)
+      needUpdated = false
+      resolve()
+
+  # Update the local cache each time the remote models are fetched.
+  fetch: (options) =>
+    super(options).then @_updateCache
 
   # Save the collection's models to the cache.
   _saveCache: =>
-    localStorage.setItem(@name, JSON.stringify(@models))
+    bgStorage.setItem(@name, JSON.stringify(@models))
 
   # Save the models and a new last-updated timestamp.
   _updateCache: =>
     @_saveCache()
     @lastUpdated = _.date()
-    localStorage.setItem(@_lastUpdatedKey, @lastUpdated.date)
+    bgStorage.setItem(@_lastUpdatedKey, @lastUpdated.date)
 
 
-## Models and Collections
-
-### Bookmark ###
+## Bookmark
 
 class Bookmark extends Backbone.Model
 
@@ -49,6 +77,8 @@ class Bookmark extends Backbone.Model
   # subclasses.
   save: -> throw 'Use BookmarkCollection.create instead'
 
+
+## BookmarkCollection
 
 # Superclass for cloud bookmark service backends. Subclasses should set `url`
 # and `parse` as usual for Backbone collections.
@@ -121,7 +151,7 @@ class BookmarkCollection extends CachedCollection
     return results
 
 
-### DeliciousCollection ###
+## DeliciousCollection
 
 # <http://www.delicious.com/help/api>
 class DeliciousCollection extends BookmarkCollection
@@ -186,7 +216,8 @@ class DeliciousCollection extends BookmarkCollection
     _.map $(resp).find('popular, recommended, network'), (node) ->
       node.getAttribute('tag')
 
-### PinboardCollection ###
+
+## PinboardCollection
 
 # Mostly matches `DeliciousCollection`.
 # <http://pinboard.in/api>
@@ -209,448 +240,3 @@ class PinboardCollection extends DeliciousCollection
   parseSuggestedTags: (resp) ->
     _.map $(resp).find('popular, recommended'), (node) ->
       node.textContent
-
-
-## Options
-
-# A simple class to wrap `localStorage` to manage options with defaults.
-class Options
-  serviceCollections:
-    'delicious': DeliciousCollection
-    'pinboard': PinboardCollection
-
-  constructor: ->
-    # Use getters and setters for a simpler interface.
-    property = (name, fn) =>
-      @__defineGetter__ name, fn
-      @__defineSetter__ name, (value) -> localStorage.setItem(name, value)
-    property 'service', -> localStorage.service or 'delicious'
-    property 'username', -> localStorage.username
-    property 'password', -> localStorage.password
-    property 'validCredentials', -> localStorage.validCredentials is 'true'
-
-  # Create a collection instance using the class defined by `service`.
-  createCollection: ->
-    new @serviceCollections[@service] [],
-      username: @username
-      password: @password
-      valid: @validCredentials
-
-
-## Views
-
-### BookmarkView ###
-
-# Display a single bookmark as a clickable element.
-class BookmarkView extends Backbone.View
-  tagName: 'li'
-  template: _.template($('#bookmark-template').html())
-
-  render: ->
-    $(@el).html(@template(@model.toJSON()))
-    return this
-
-  events:
-    'click': 'click'
-
-  click: (event) =>
-    # If cmd- or ctrl-clicked, open the link in a new background tab.
-    if event.metaKey or event.ctrlKey
-      chrome.tabs.create(url: @model.get('url'), selected: false)
-    # Otherwise, open the link in the current tab and close the popup.
-    else
-      chrome.tabs.getSelected null, (tab) =>
-        chrome.tabs.update(tab.id, url: @model.get('url'))
-      window.close()
-    return false
-
-
-### BookmarksView ###
-
-# Display a list of bookmarks and track the currently-selected one.
-class BookmarksView extends Backbone.View
-
-  render: (bookmarks) =>
-    @el.html('')
-    _.each(bookmarks, @append)
-    @selected = @el.children().first().addClass('selected')
-    return this
-
-  append: (model) =>
-    view = new BookmarkView(model: model)
-    @el.append(view.render().el)
-
-  events:
-    'mouseover li': 'selectHovered'
-
-  selectHovered: (event) =>
-    @select($(event.currentTarget))
-
-  select: (item) ->
-    @selected?.removeClass('selected')
-    @selected = item.addClass('selected')
-
-  selectNext: =>
-    next = @selected.next()
-    @select(next) if next.length
-
-  selectPrevious: =>
-    previous = @selected.prev()
-    @select(previous) if previous.length
-
-  visitSelected: =>
-    @selected.click()
-
-
-### SearchView ###
-
-# The main application view. Handles the search input box and displays results
-# using a BookmarksView.
-class SearchView extends Backbone.View
-  tagName: 'form'
-  className: 'search'
-  template: _.template($('#search-template').html())
-
-  initialize: (options) ->
-    @bookmarks = options.bookmarks
-    @bookmarks.bind('reset', @updateResults)
-
-  render: =>
-    $(@el).html(@template())
-    @resultsView = new BookmarksView(el: @$('ul'))
-    @updateResults()
-    return this
-
-  updateResults: =>
-    query = @$('input').val()
-    visible = if query.length < 2
-      @bookmarks.recent()
-    else
-      @bookmarks.search(query)
-    @resultsView.render(visible)
-
-  events:
-    'blur input': 'refocus'
-    'keydown': 'keydown'
-
-  # Restrict input focus to the search box.
-  refocus: (event) =>
-    _.defer(=> @$('input').focus())
-
-  # Handle up/down/enter navigation of the selected item.
-  keydown: (event) =>
-    switch event.keyCode
-      when 40 then @resultsView.selectNext()      # down arrow
-      when 38 then @resultsView.selectPrevious()  # up arrow
-      when 13 then @resultsView.visitSelected()   # enter
-      # Update the filter and allow the event to propagate.
-      else
-        _.defer(@updateResults)
-        return true
-    return false
-
-
-### AddView ###
-
-# Add a new bookmark.
-class AddView extends Backbone.View
-  tagName: 'div'
-  className: 'add'
-  template: _.template($('#add-template').html())
-
-  errorMessages:
-    'default': 'You missed!'
-    'ajax error': 'API service failure. What have you done?!'
-    'missing url': 'Or not. Your URL blows.'
-
-  render: ->
-    $(@el).html(@template(app.options))
-    oldTags = @$('fieldset.tags')
-    @tagsView = new TagsView
-      name: 'tags'
-      placeholder: oldTags.find('input').attr('placeholder')
-    oldTags.replaceWith(@tagsView.render().el)
-    _.defer(=> @tagsView.input.focus())
-    chrome.tabs.getSelected null, (tab) =>
-      app.bookmarks.suggestTags? tab.url, (tags) =>
-        @tagsView.addSuggested(tag) for tag in tags
-      @$('.url .text').text(tab.url)
-      @$('[name=url]').val(tab.url)
-      @$('[name=title]').val(tab.title)
-      previous = app.bookmarks.find (bookmark) ->
-        bookmark.get('url') is tab.url
-      if previous
-        ago = _.date(previous.get('time')).fromNow()
-        @$('h2').text("You added this link #{ago}.")
-        @$('[name=title]').val(previous.get('title'))
-        @tagsView.val(previous.get('tags'))
-        @$('[name=private]').attr('checked', previous.get('private'))
-    # TODO: suggest tags -- new view? tag.click adds to tags
-    # TODO: tag autocomplete
-    return this
-
-  events:
-    'click .url a': 'editUrl'
-    'mouseover .url a': 'hoverEditUrl'
-    'mouseout .url a': 'unhoverEditUrl'
-    'submit': 'save'
-
-  # Reveal the edit-url input, first sliding the fieldset "open". To increase
-  # the height of the fieldset without affecting the layout of the rest of the
-  # page elements, pull the fieldset out of the flow by positioning it
-  # absolutely and increasing the padding of the following element to make up
-  # for it.
-  editUrl: (event) =>
-    fieldset = @$('fieldset').first()
-    fieldset.css
-      position: 'absolute'
-      top: fieldset.position().top
-      height: fieldset.find('input').outerHeight() * 2 + (5 * 3)
-    @$('.url').css
-      paddingTop: fieldset.outerHeight(true) + 5
-      visibility: 'hidden'
-    fieldset.one 'webkitTransitionEnd', =>
-      # Focus the input box, but ensure the beginning of the URL remains
-      # visible (by default, focus puts the cursor at the end of the content).
-      @$('.edit-url').show().find('input').get(0).setSelectionRange(0, 0)
-
-  hoverEditUrl: (event) =>
-    @$('.url a').addClass('hover')
-
-  unhoverEditUrl: (event) =>
-    @$('.url a').removeClass('hover')
-
-  save: (event) =>
-    @$('h2').html('&nbsp;')
-    model =
-      url: @$('[name=url]').val()
-      title: @$('[name=title]').val()
-      tags: @tagsView.val()
-      private: @$('[name=private]').is(':checked')
-    $(@el).addClass('loading')
-    app.bookmarks.create model,
-      success: =>
-        $(@el).addClass('done')
-        @$('h2').text('Bravo!')
-        _.delay((-> window.close()), 750)
-      error: (data) =>
-        $(@el).removeClass('loading')
-        data = 'ajax error' unless _.isString(data)
-        msg = @errorMessages[data] or @errorMessages.default
-        @$('h2').text(msg)
-    return false
-
-
-### TagsView ###
-
-# Handle adding/removing tags and displaying suggested tags.
-class TagsView extends Backbone.View
-  tagName: 'fieldset'
-  template: _.template($('#tags-template').html())
-
-  initialize: (options) ->
-    @templateData =
-      name: options.name
-      value: options.value
-      placeholder: options.placeholder
-    @delimiter = options.delimiter or ' '
-
-  render: ->
-    $(@el).html(@template(@templateData))
-    @input = @$('input')
-    @tags = @$('ul.tags')
-    @placeholder = @$('.placeholder')
-    @suggestedTags = @$('ul.suggested-tags')
-    _.defer(@fitInputToContents)
-    return this
-
-  events:
-    'click .pseudo-input': 'focusInput'
-    'keydown input': 'handleKeyDown'
-    'keypress input': 'handleKeyPress'
-    'blur input': 'extractTag'
-    'click .tags li': 'removeTag'
-    'click .suggested-tags li': 'addFromSuggested'
-
-  focusInput: (event) =>
-    @input.focus()
-
-  handleKeyDown: (event) =>
-    # If a user presses backspace when the input box is empty, unextract the
-    # last stored tag for editing.
-    if event.keyCode is 8 and @input.val() is ''
-      @unextractTag()
-      return false
-    # If a user presses enter in the input box, ensure any entered text is
-    # extracted.
-    if event.keyCode is 13
-      @extractTag()
-    # Defer resizing the input until its value has been updated for this
-    # keypress. Calling fitInputToContents in a keyup handler makes more sense,
-    # but this method reduces visual lag.
-    _.defer(@fitInputToContents)
-
-  # If a user presses the delimiter key, extract the tag rather than inserting
-  # the delimiter.
-  handleKeyPress: (event) =>
-    if event.keyCode is @delimiter.charCodeAt(0)
-      @extractTag(@input.get(0).selectionStart)
-      return false
-
-  # Extract `length` characters from the beginning of the input box into a new
-  # tag object. If `length` is not given, extract the entire input.
-  extractTag: (length) =>
-    length = @input.val().length unless _.isNumber(length)
-    tag = @input.val().slice(0, length).trim()
-    if tag
-      remainder = @input.val().slice(length).trim()
-      @input.val(remainder)
-      @add(tag)
-
-  removeTag: (event) =>
-    $(event.currentTarget).remove()
-
-  # Handle a click on a suggested tag by adding the tag to the list. Set up a
-  # click handler for the newly-added tag to restore visibility to the
-  # suggested tag.
-  addFromSuggested: (event) =>
-    suggested = $(event.currentTarget)
-    @add(suggested.hide().text()).click -> suggested.show()
-
-  add: (tag) ->
-    @placeholder.hide()
-    $(@make('li', {}, tag)).appendTo(@tags)
-
-  addSuggested: (tag) ->
-    @suggestedTags.append(@make('li', {id: _.uniqueId()}, tag))
-
-  # Emulate jQuery's `val` method; when passed a delimited list of tags, set
-  # the tags list appropriate. When called with no argument, return the list of
-  # tags as a delimited string.
-  val: (tags) =>
-    if tags?
-      @tags.empty()
-      _.each tags.split(@delimiter), (tag) => @add(tag) if tag
-    else
-      _.map(@tags.children(), (tag) -> tag.textContent).join(@delimiter)
-
-  # Remove the last tag from the tag list (if any) and place its value in the
-  # input. Re-fit the input when done.
-  unextractTag: ->
-    tag = @tags.children().last().remove().text().trim()
-    @input.val(tag)
-    _.defer(@fitInputToContents)
-
-  # Resize the input to just fit its contents, while remaining small enough to
-  # fit inside its container. To calculate the content width, create a
-  # temporary invisible div with the same class and contents and measure it.
-  fitInputToContents: =>
-    padding = 30
-    @placeholder.hide() unless @input.val() is ''
-    fake = $('<div/>').addClass('pseudo-input').css
-      position: 'absolute'
-      left: -9999
-      top: -9999
-      whiteSpace: 'nowrap'
-      width: 'auto'
-    fake.text(@input.val()).appendTo(@el)
-    @input.css(width: Math.min(fake.width() + padding, $(@el).width()))
-    fake.remove()
-
-
-### OptionsView ###
-
-# The options panel.
-class OptionsView extends Backbone.View
-  tagName: 'div'
-  className: 'options'
-  template: _.template($('#options-template').html())
-
-  render: ->
-    $(@el).html(@template(app.options))
-    @service = @$('#service')
-    @serviceInput = @service.find('input')
-    @knob = @service.find('.knob')
-    return this
-
-  events:
-    'click #service a': 'chooseService'
-    'click #service .switch': 'toggleService'
-    'submit': 'save'
-
-  chooseService: (event) =>
-    choice = $(event.currentTarget).attr('class')
-    @serviceInput.val(choice)
-    @service.attr('class', choice)
-
-  toggleService: (event) =>
-    choice = if @service.attr('class') is 'pinboard' then 'delicious' else 'pinboard'
-    @serviceInput.val(choice)
-    @service.attr('class', choice)
-
-  # Save the options and update the view accordingly.
-  save: (event) =>
-    app.options.service = @$('[name=service]').val()
-    app.options.username = @$('[name=username]').val()
-    app.options.password = @$('[name=password]').val()
-    # Reload the app's collection and test whether the new credentials are
-    # valid. If so, fetch the data. If not, warn the user.
-    app.loadCollection()
-    $(@el).addClass('loading')
-    $('h2').addClass('feedback').html('Inspecting your hunting license&hellip;')
-    app.bookmarks.isAuthValid (valid) =>
-      if valid
-        localStorage.validCredentials = true
-        $('h2').html('Rounding up your links&hellip;')
-        app.bookmarks.fetch success: =>
-          $(@el).removeClass('loading')
-          app.navigate('search', true)
-      else
-        localStorage.validCredentials = false
-        $('h2').text("Blast! Somethin' smells rotten.")
-        $(@el).removeClass('loading')
-    return false
-
-
-## Router
-
-class BookmarksApp extends Backbone.Router
-
-  # Build a collection, populate it from the local cache, and fire off a
-  # request for updates in the background.
-  initialize: ->
-    @options = new Options
-    @loadCollection()
-    @bookmarks?.fetchIfStale()
-    @panel = $('#panel')
-
-  loadCollection: ->
-    @bookmarks = @options.createCollection()
-
-  # Render `view` and make it visible, removing any previous view.
-  show: (view) ->
-    @currentView?.remove()
-    @currentView = view
-    @panel.html(view.render().el)
-
-  routes:
-    '': 'default'
-    'search': 'search'
-    'add': 'add'
-    'options': 'editOptions'
-
-  # Redirect to the options panel unless we have valid credentials.
-  guard: (fn) ->
-    if @options.validCredentials then fn() else app.navigate('options', true)
-
-  default: ->
-    @guard(-> app.navigate('search', true))
-
-  search: ->
-    @guard(=> @show(new SearchView(bookmarks: @bookmarks)))
-
-  add: ->
-    @guard(=> @show(new AddView))
-
-  editOptions: ->
-    @show(new OptionsView)

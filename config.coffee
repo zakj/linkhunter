@@ -1,0 +1,34 @@
+# A simple class to manage stored configuration with defaults.
+class Config
+  serviceCollections:
+    'delicious': DeliciousCollection
+    'pinboard': PinboardCollection
+
+  constructor: ->
+    @loaded = bgStorage.getItem('config')
+    @loaded.then (config) =>
+      data = if config? then JSON.parse(config) else {}
+      @service = data.service or 'delicious'
+      @username = data.username
+      @password = data.password
+      @validCredentials = data.validCredentials or false
+
+  checkCredentials: (callback) ->
+    bookmarks = @createCollection()
+    bookmarks.isAuthValid (valid) =>
+      @validCredentials = valid
+      callback(valid)
+
+  save: ->
+    bgStorage.setItem 'config', JSON.stringify
+      service: @service
+      username: @username
+      password: @password
+      validCredentials: @validCredentials
+
+  # Create a collection instance using the class defined by `service`.
+  createCollection: ->
+    throw 'config not loaded' unless @loaded
+    new @serviceCollections[@service] [],
+      username: @username
+      password: @password
