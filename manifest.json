@@ -16,7 +16,6 @@
   "permissions": [
     "https://api.del.icio.us/*",
     "https://api.pinboard.in/*",
-    "chrome://favicon/",
     "tabs"
   ]
 }
