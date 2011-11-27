@@ -1,4 +1,4 @@
-COFFEE=background.coffee bookmarks.coffee config.coffee linkhunter.coffee
+COFFEE=background.coffee bookmarks.coffee config.coffee content.coffee linkhunter.coffee
 LESS=bookmarks.less
 NODE_BIN=~/node_modules/.bin
 

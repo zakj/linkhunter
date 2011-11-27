@@ -4,7 +4,7 @@
 @img-size: @input-height;
 @gutter: 10px;
 @text-padding: @img-size + @gutter * 2;
-@body-padding: @gutter - 4;  // The popup is already padded by 4px.
+@body-padding: @gutter;
 
 @text-color: #333;
 @background-color: #f1f1f1;
@@ -77,27 +77,21 @@
 
 // Reset.
 * { box-sizing: border-box; margin: 0; padding: 0; }
-a { text-decoration: none; }
+a { cursor: pointer; text-decoration: none; }
 
 body {
   -webkit-user-select: none;
   font-family: "Helvetica Neue", sans-serif;
-  overflow-y: hidden;
-  padding: @body-padding;
-  width: @width + @body-padding * 2;
 }
 
-// A bug in Chrome causes the popup not to reduce its height to match the
-// height of its contents (though increases in content height work fine). Work
-// around: restrict the body height and add a fake element to provide bottom
-// padding.
-html, body {
-  height: 100px;
-  body:after {
-    display: block;
-    content: "";
-    height: @body-padding;
-  }
+#panel {
+  background-color: #fff;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.4);
+  margin: 15px 15px 50px auto;
+  padding: @gutter;
+  width: @width + @gutter * 2;
 }
 
 img {

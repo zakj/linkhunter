@@ -1,0 +1,31 @@
+.linkhunter-iframe {
+  border: none;
+  width: 480px;
+  height: 627px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 2147483647;
+
+  -webkit-animation-name: popIn;
+  -webkit-animation-duration: 0.25s;
+  -webkit-animation-timing-function: ease-out;
+}
+
+@-webkit-keyframes popIn {
+  from {
+    -webkit-transform: scale(0);
+    -webkit-transform-origin: top right;
+    opacity: 0;
+  }
+  70% {
+    -webkit-transform: scale(1.05);
+    -webkit-transform-origin: top right;
+    opacity: 1;
+  }
+  to {
+    -webkit-transform: scale(1);
+    -webkit-transform-origin: top right;
+    opacity: 1;
+  }
+}

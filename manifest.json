@@ -1,6 +1,6 @@
 {
   "name": "Linkhunter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Find your links on Delicious or Pinboard.",
   "homepage_url": "http://hellocabin.com/",
   "icons": {
@@ -10,9 +10,15 @@
   "background_page": "background.html",
   "browser_action": {
     "default_icon": "images/mark/19.png",
-    "default_title": "Linkhunter",
-    "default_popup": "popup.html"
+    "default_title": "Linkhunter"
   },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["compiled/content.js"],
+      "run_at": "document_end"
+    }
+  ],
   "permissions": [
     "https://api.del.icio.us/*",
     "https://api.pinboard.in/*",

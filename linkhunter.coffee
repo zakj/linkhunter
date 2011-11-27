@@ -19,12 +19,10 @@ class BookmarkView extends Backbone.View
   click: (event) =>
     # If cmd- or ctrl-clicked, open the link in a new background tab.
     if event.metaKey or event.ctrlKey
-      chrome.tabs.create(url: @model.get('url'), selected: false)
+      chrome.extension.sendRequest(method: 'createTab', url: @model.get('url'))
     # Otherwise, open the link in the current tab and close the popup.
     else
-      chrome.tabs.getSelected null, (tab) =>
-        chrome.tabs.update(tab.id, url: @model.get('url'))
-      window.close()
+      top.location.href = @model.get('url')
     return false
 
 
@@ -100,17 +98,27 @@ class SearchView extends Backbone.View
   refocus: (event) =>
     _.defer(=> @$('input').focus())
 
-  # Handle up/down/enter navigation of the selected item.
+  # Handle navigation of the selected item and filter updates.
   keydown: (event) =>
     switch event.keyCode
       when 40 then @resultsView.selectNext()      # down arrow
       when 38 then @resultsView.selectPrevious()  # up arrow
       when 13 then @resultsView.visitSelected()   # enter
+      when 27 then @escape()                      # escape
       # Update the filter and allow the event to propagate.
       else
         _.defer(@updateResults)
         return true
     return false
+
+  # Handle escape key press: clear the input box or, if it is already empty,
+  # close the popup.
+  escape: ->
+    if @$('input').val() is ''
+      app.close()
+    else
+      @$('input').val('')
+      @updateResults()
 
 
 ## AddView
@@ -134,7 +142,7 @@ class AddView extends Backbone.View
       placeholder: oldTags.find('input').attr('placeholder')
     oldTags.replaceWith(@tagsView.render().el)
     _.defer(=> @tagsView.input.focus())
-    chrome.tabs.getSelected null, (tab) =>
+    chrome.extension.sendRequest method: 'getCurrentTab', (tab) =>
       app.bookmarks.suggestTags? tab.url, (tags) =>
         @tagsView.addSuggested(tag) for tag in tags
       @$('.url .text').text(tab.url)
@@ -195,7 +203,7 @@ class AddView extends Backbone.View
       success: =>
         $(@el).addClass('done')
         @$('h2').text('Bravo!')
-        _.delay((-> window.close()), 750)
+        _.delay((-> app.close()), 750)
       error: (data) =>
         $(@el).removeClass('loading')
         data = 'ajax error' unless _.isString(data)
@@ -339,6 +347,7 @@ class ConfigView extends Backbone.View
   events:
     'click #service a': 'chooseService'
     'click #service .switch': 'toggleService'
+    'click .close': 'close'
     'submit': 'save'
 
   chooseService: (event) =>
@@ -350,6 +359,11 @@ class ConfigView extends Backbone.View
     choice = if @service.attr('class') is 'pinboard' then 'delicious' else 'pinboard'
     @serviceInput.val(choice)
     @service.attr('class', choice)
+
+  # Close the config panel. With valid credentials, return to the default
+  # route. Otherwise, close the popup.
+  close: ->
+    if app.config.validCredentials then app.default() else app.close()
 
   # Save the config and update the view accordingly.
   save: (event) =>
@@ -415,3 +429,6 @@ class Linkhunter extends Backbone.Router
 
   editConfig: ->
     @show(new ConfigView)
+
+  close: ->
+    chrome.extension.sendRequest(method: 'togglePopup')
