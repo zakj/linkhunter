@@ -46,7 +46,7 @@ class CachedCollection extends Backbone.Collection
         @trigger('reset')
     @_lastUpdatedKey = "#{@name}:lastUpdated"
     bgStorage.getItem(@_lastUpdatedKey).then (lastUpdated) =>
-      @lastUpdated = _.date(lastUpdated or 0)
+      @lastUpdated = moment(lastUpdated or 0)
       needUpdated = false
       resolve()
 
@@ -61,7 +61,7 @@ class CachedCollection extends Backbone.Collection
   # Save the models and a new last-updated timestamp.
   _updateCache: =>
     @_saveCache()
-    @lastUpdated = _.date()
+    @lastUpdated = moment()
     bgStorage.setItem(@_lastUpdatedKey, @lastUpdated.date)
 
 
@@ -175,7 +175,7 @@ class DeliciousCollection extends BookmarkCollection
   fetchIfStale: ->
     settings = _.extend _.clone(@settings),
       success: (data) =>
-        @fetch() if _.date($(data).find('update').attr('time')) > @lastUpdated
+        @fetch() if moment($(data).find('update').attr('time')) > @lastUpdated
     $.ajax(@updateUrl, settings)
 
   isAuthValid: (callback) ->

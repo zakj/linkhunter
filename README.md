@@ -16,7 +16,7 @@ technology:
 * [CoffeeScript][]
 * [Backbone.js][]
 * [Underscore.js][]
-* [underscore.date][]
+* [Moment.js][]
 * [jQuery][]
 * [LESS][]
 
@@ -54,6 +54,6 @@ SOFTWARE.
 [CoffeeScript]: http://jashkenas.github.com/coffee-script/
 [Backbone.js]: http://documentcloud.github.com/backbone/
 [Underscore.js]: http://documentcloud.github.com/underscore/
-[underscore.date]: http://timrwood.github.com/underscore.date/
+[Moment.js]: http://momentjs.com/
 [jQuery]: http://jquery.com/
 [LESS]: http://lesscss.org/

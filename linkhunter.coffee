@@ -151,7 +151,7 @@ class AddView extends Backbone.View
       previous = app.bookmarks.find (bookmark) ->
         bookmark.get('url') is tab.url
       if previous
-        ago = _.date(previous.get('time')).fromNow()
+        ago = moment(previous.get('time')).fromNow()
         @$('h2').text("You added this link #{ago}.")
         @$('[name=title]').val(previous.get('title'))
         @tagsView.val(previous.get('tags'))
