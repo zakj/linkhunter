@@ -138,7 +138,6 @@ button, .button {
     -webkit-box-pack: justify;
     -webkit-box-align: center;
     display: -webkit-box;
-    margin-bottom: @gutter;
     input {
       display: block;
       width: 66%;
@@ -179,6 +178,7 @@ button, .button {
     &:first-child {
       .border-top-radius(5px);
       border-top-color: @border-color;
+      margin-top: @gutter;
       &:after { display: none; }
     }
     &:last-child {
