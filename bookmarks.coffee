@@ -179,11 +179,15 @@ class DeliciousCollection extends BookmarkCollection
     $.ajax(@updateUrl, settings)
 
   isAuthValid: (callback) ->
-    settings = _.extend _.clone(@settings),
-      dataType: 'xml'
-      success: (data) -> callback(true)
-      error: (data) -> callback(false)
-    $.ajax(@updateUrl, settings)
+    # Only attempt the ajax call when username and password are set.
+    if @settings.username and @settings.password
+      settings = _.extend _.clone(@settings),
+        dataType: 'xml'
+        success: (data) -> callback(true)
+        error: (data) -> callback(false)
+      $.ajax(@updateUrl, settings)
+    else
+      _.defer(-> callback(false))
 
   create: (model, options) ->
     model = @_prepareModel(model)
