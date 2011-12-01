@@ -6,8 +6,10 @@ chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
 
 
 # Instruct the background page to intercept the default popup and open in an
-# iframe instead.
-chrome.extension.sendRequest(method: 'enableInPagePopup')
+# iframe instead, so long as we have a body to which we can append (frameset
+# pages do not, and aren't worth fighting for).
+if document.querySelector('body')
+  chrome.extension.sendRequest(method: 'enableInPagePopup')
 
 
 # Open the popup on ⌘J.
