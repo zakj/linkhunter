@@ -5,6 +5,11 @@ chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
     sendResponse({})
 
 
+# Instruct the background page to intercept the default popup and open in an
+# iframe instead.
+chrome.extension.sendRequest(method: 'enableInPagePopup')
+
+
 # Open the popup on ⌘J.
 window.addEventListener 'keydown', (event) ->
   otherModifiers = (event.altKey or event.ctrlKey or event.shiftKey)

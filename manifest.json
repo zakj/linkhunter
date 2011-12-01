@@ -10,7 +10,8 @@
   "background_page": "background.html",
   "browser_action": {
     "default_icon": "images/mark/19.png",
-    "default_title": "Linkhunter"
+    "default_title": "Linkhunter",
+    "default_popup": "popup.html"
   },
   "content_scripts": [
     {

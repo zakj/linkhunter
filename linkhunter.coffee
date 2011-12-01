@@ -20,9 +20,15 @@ class BookmarkView extends Backbone.View
     # If cmd- or ctrl-clicked, open the link in a new background tab.
     if event.metaKey or event.ctrlKey
       chrome.extension.sendRequest(method: 'createTab', url: @model.get('url'))
-    # Otherwise, open the link in the current tab and close the popup.
+    # Otherwise, open the link in the current tab and close the popup if
+    # necessary.
     else
-      top.location.href = @model.get('url')
+      if app.iframed
+        top.location.href = @model.get('url')
+      else
+        chrome.tabs.getSelected null, (tab) =>
+          chrome.tabs.update(tab.id, url: @model.get('url'))
+        window.close()
     return false
 
 
@@ -393,6 +399,8 @@ class Linkhunter extends Backbone.Router
   # Build a collection, populate it from the local cache, and fire off a
   # request for updates in the background.
   initialize: ->
+    @iframed = window isnt top
+    $('body').addClass('in-iframe') if @iframed
     @config = new Config
     @config.loaded.then =>
       @loadCollection().loaded.then => @bookmarks?.fetchIfStale()

@@ -14,11 +14,15 @@ chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
         sendResponse(tab)
     when 'createTab'
       chrome.tabs.create(url: request.url, selected: false)
-      sendResponse(null)
+      sendResponse()
+    when 'enableInPagePopup'
+      chrome.tabs.getSelected null, (tab) ->
+        chrome.browserAction.setPopup(tabId: tab.id, popup: '')
+      sendResponse()
     when 'togglePopup'
       chrome.tabs.getSelected null, (tab) ->
         chrome.tabs.sendRequest(tab.id, 'togglePopup')
-      sendResponse(null)
+      sendResponse()
 
 
 # Listen for toolbar button clicks to toggle the popup in the active tab.
