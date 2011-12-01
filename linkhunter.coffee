@@ -439,4 +439,7 @@ class Linkhunter extends Backbone.Router
     @show(new ConfigView)
 
   close: ->
-    chrome.extension.sendRequest(method: 'togglePopup')
+    if @iframed
+      chrome.extension.sendRequest(method: 'closePopup')
+    else
+      window.close()

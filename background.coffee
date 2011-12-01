@@ -2,7 +2,9 @@
 # `method` attribute. Other object attributes vary based on the method.
 # "getItem" and "setItem" provide an interface to localStorage (as content
 # scripts cannot access it directly). "createTab" opens a new background tab.
-# "togglePopup" opens or closes the Linkhunter popup in the active tab.
+# "enableInPagePopup" removes the default popup from the browser action button,
+# allowing our listener below to open the popup in an iframe. "closePopup"
+# creates a new request to the content script to close the iframe.
 chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
   switch request.method
     when 'getItem'
@@ -19,9 +21,9 @@ chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
       chrome.tabs.getSelected null, (tab) ->
         chrome.browserAction.setPopup(tabId: tab.id, popup: '')
       sendResponse()
-    when 'togglePopup'
+    when 'closePopup'
       chrome.tabs.getSelected null, (tab) ->
-        chrome.tabs.sendRequest(tab.id, 'togglePopup')
+        chrome.tabs.sendRequest(tab.id, 'closePopup')
       sendResponse()
 
 
