@@ -38,6 +38,10 @@ iframe =
       @el.className = @className
       @el.src = chrome.extension.getURL('popup.html')
     document.querySelector('body').appendChild(@el)
+    closeOnClick = (event) ->
+      document.removeEventListener('click', closeOnClick)
+      iframe.close()
+    document.addEventListener('click', closeOnClick)
 
   close: ->
     return unless @el?.parentNode?
