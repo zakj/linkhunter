@@ -88,6 +88,15 @@ class SearchView extends Backbone.View
     @updateResults()
     return this
 
+  # On escape keypress: clear the input box or, if it is already empty, close
+  # the popup.
+  escape: ->
+    if @$('input').val() is ''
+      app.close()
+    else
+      @$('input').val('')
+      @updateResults()
+
   updateResults: =>
     query = @$('input').val()
     visible = if query.length < 2
@@ -110,21 +119,11 @@ class SearchView extends Backbone.View
       when 40 then @resultsView.selectNext()      # down arrow
       when 38 then @resultsView.selectPrevious()  # up arrow
       when 13 then @resultsView.visitSelected()   # enter
-      when 27 then @escape()                      # escape
       # Update the filter and allow the event to propagate.
       else
         _.defer(@updateResults)
         return true
     return false
-
-  # Handle escape key press: clear the input box or, if it is already empty,
-  # close the popup.
-  escape: ->
-    if @$('input').val() is ''
-      app.close()
-    else
-      @$('input').val('')
-      @updateResults()
 
 
 ## AddView
@@ -163,6 +162,10 @@ class AddView extends Backbone.View
         @tagsView.val(previous.get('tags'))
         @$('[name=private]').attr('checked', previous.get('private'))
     return this
+
+  # Handle escape keypress: return to the search view.
+  escape: ->
+    app.navigate('search', true)
 
   events:
     'click .url a': 'editUrl'
@@ -348,6 +351,9 @@ class ConfigView extends Backbone.View
     @knob = @service.find('.knob')
     return this
 
+  # Handle escape keypress: close the panel.
+  escape: -> @close()
+
   events:
     'click #service a': 'chooseService'
     'click #service .switch': 'toggleService'
@@ -404,6 +410,7 @@ class Linkhunter extends Backbone.Router
       @loadCollection().loaded.then => @bookmarks?.fetchIfStale()
       Backbone.history.start()
     @panel = $('#panel')
+    $(window).on('keydown', @handleEscapeKey)
 
   loadCollection: ->
     @bookmarks = @config.createCollection()
@@ -414,6 +421,19 @@ class Linkhunter extends Backbone.Router
     @currentView = view
     @panel.html(view.render().el)
 
+  # Escape keypresses must be caught on the window, rather than on a given
+  # element. Do so here, handing off to the current view.
+  handleEscapeKey: (event) =>
+    if event.keyCode is 27
+      @currentView.escape()
+      return false
+
+  close: ->
+    if @iframed
+      chrome.extension.sendRequest(method: 'closePopup')
+    else
+      window.close()
+
   routes:
     '': 'default'
     'search': 'search'
@@ -422,10 +442,10 @@ class Linkhunter extends Backbone.Router
 
   # Redirect to the config panel unless we have valid credentials.
   guard: (fn) ->
-    if @config.validCredentials then fn() else app.navigate('config', true)
+    if @config.validCredentials then fn() else @navigate('config', true)
 
   default: ->
-    @guard(-> app.navigate('search', true))
+    @guard(=> @navigate('search', true))
 
   search: ->
     @guard(=> @show(new SearchView(bookmarks: @bookmarks)))
@@ -435,9 +455,3 @@ class Linkhunter extends Backbone.Router
 
   editConfig: ->
     @show(new ConfigView)
-
-  close: ->
-    if @iframed
-      chrome.extension.sendRequest(method: 'closePopup')
-    else
-      window.close()
