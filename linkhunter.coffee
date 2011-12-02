@@ -162,8 +162,6 @@ class AddView extends Backbone.View
         @$('[name=title]').val(previous.get('title'))
         @tagsView.val(previous.get('tags'))
         @$('[name=private]').attr('checked', previous.get('private'))
-    # TODO: suggest tags -- new view? tag.click adds to tags
-    # TODO: tag autocomplete
     return this
 
   events:
