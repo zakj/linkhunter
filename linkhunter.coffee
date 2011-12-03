@@ -416,6 +416,10 @@ class Linkhunter extends Backbone.Router
       Backbone.history.start()
     @panel = $('#panel')
     $(window).on('keydown', @handleEscapeKey)
+    # When clicking outside of the panel, close the app (this saves trying to
+    # resize the iframe to match the app size).
+    $('#panel').on('click', (event) -> event.stopPropagation())
+    $(window).on('click', @close)
 
   loadCollection: ->
     @bookmarks = @config.createCollection()
@@ -433,7 +437,7 @@ class Linkhunter extends Backbone.Router
       @currentView.escape()
       return false
 
-  close: ->
+  close: =>
     if @iframed
       chrome.extension.sendRequest(method: 'closePopup')
     else
