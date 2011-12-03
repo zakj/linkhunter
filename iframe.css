@@ -1,11 +1,14 @@
-.linkhunter-iframe {
-  border: none;
-  width: 480px;
-  height: 629px;
+.linkhunter-iframe-container {
   position: fixed;
   top: 0;
   right: 0;
   z-index: 2147483647;
+}
+
+.linkhunter-iframe-container iframe {
+  border: none;
+  width: 480px;
+  height: 629px;
 
   -webkit-animation-name: popIn;
   -webkit-animation-duration: 0.25s;

@@ -23,9 +23,12 @@ window.addEventListener 'keydown', (event) ->
     iframe.open()
 
 
-# Manage opening and closing the popup in an iframe.
+# Manage opening and closing the popup in an iframe. A div wrapping the iframe
+# is used to provide a fixed-position context for the pop-in animation. Without
+# a container, the animation's origin is relative to the body, so the page
+# scrolls to the top when Linkhunter opens.
 iframe =
-  className: 'linkhunter-iframe'
+  className: 'linkhunter-iframe-container'
   el: document.querySelector(".#{@className}")
 
   open: ->
@@ -34,9 +37,11 @@ iframe =
       css.rel = 'stylesheet'
       css.href = chrome.extension.getURL('iframe.css')
       document.querySelector('head').appendChild(css)
-      @el = document.createElement('iframe')
+      @el = document.createElement('div')
       @el.className = @className
-      @el.src = chrome.extension.getURL('popup.html')
+      frame = document.createElement('iframe')
+      frame.src = chrome.extension.getURL('popup.html')
+      @el.appendChild(frame)
     document.querySelector('body').appendChild(@el)
     closeOnClick = (event) ->
       document.removeEventListener('click', closeOnClick)
