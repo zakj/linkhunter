@@ -1,6 +1,6 @@
 COFFEE=$(wildcard scripts/*.coffee)
 LESS=styles/bookmarks.less
-NODE_BIN=~/node_modules/.bin
+NODE_BIN=$(shell npm bin)
 
 JS=$(addprefix compiled/,$(notdir $(COFFEE:coffee=js)))
 CSS=$(addprefix compiled/,$(notdir $(LESS:less=css)))
