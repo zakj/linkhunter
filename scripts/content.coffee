@@ -35,7 +35,7 @@ iframe =
     if not @el?
       css = document.createElement('link')
       css.rel = 'stylesheet'
-      css.href = chrome.extension.getURL('iframe.css')
+      css.href = chrome.extension.getURL('styles/iframe.css')
       document.querySelector('head').appendChild(css)
       @el = document.createElement('div')
       @el.className = @className

@@ -1,25 +1,25 @@
-COFFEE=background.coffee bookmarks.coffee config.coffee content.coffee linkhunter.coffee
-LESS=bookmarks.less
+COFFEE=$(wildcard scripts/*.coffee)
+LESS=styles/bookmarks.less
 NODE_BIN=~/node_modules/.bin
 
-JS=$(addprefix compiled/,$(COFFEE:.coffee=.js))
-CSS=$(addprefix compiled/,$(LESS:.less=.css))
+JS=$(addprefix compiled/,$(notdir $(COFFEE:coffee=js)))
+CSS=$(addprefix compiled/,$(notdir $(LESS:less=css)))
+DOCS=$(addprefix docs/,$(notdir $(COFFEE:coffee=html)))
 
-compiled/%.js: %.coffee compiled
+compiled/%.js: scripts/%.coffee compiled
 	coffee --compile --bare --print $< | uglifyjs >$@
 
-compiled/%.css: %.less compiled
+compiled/%.css: styles/%.less compiled
 	$(NODE_BIN)/lessc -x $< $@
-
-docs/%.html: %.coffee
-	$(NODE_BIN)/docco $<
 
 default: $(JS) $(CSS)
 
 compiled:
 	mkdir -p compiled
 
-docs: docs/$(FILENAME).html
+.PHONY: docs
+docs:
+	$(NODE_BIN)/docco $(COFFEE)
 
 clean:
 	rm -rf compiled docs
