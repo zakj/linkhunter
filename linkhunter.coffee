@@ -113,8 +113,13 @@ class SearchView extends Backbone.View
   refocus: (event) =>
     _.defer(=> @$('input').focus())
 
-  # Handle navigation of the selected item and filter updates.
+  # Handle keyboard navigation and filter updates.
   keydown: (event) =>
+    # Go straight to the add view on ⌘J.
+    otherModifiers = (event.altKey or event.ctrlKey or event.shiftKey)
+    if event.metaKey and event.keyCode is 74 and not otherModifiers
+      app.navigate('add', true)
+      return false
     switch event.keyCode
       when 40 then @resultsView.selectNext()      # down arrow
       when 38 then @resultsView.selectPrevious()  # up arrow
