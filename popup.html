@@ -16,7 +16,7 @@
 </script>
 
 <script id=bookmark-template type=text/template>
-  <img src="https://www.google.com/s2/favicons?domain_url={{ encodeURI(url) }}" alt="">
+  <img src="{{ favicon }}" alt="">
   <div class=title>{{ title }}</div>
   <div class=url>{{ url }}</div>
   <div class=age>{{ moment(time).fromNow() }}</div>

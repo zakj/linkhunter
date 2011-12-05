@@ -10,7 +10,10 @@ class BookmarkView extends Backbone.View
   template: _.template($('#bookmark-template').html())
 
   render: ->
-    $(@el).html(@template(@model.toJSON()))
+    data = @model.toJSON()
+    domain = data.url.split('/')[2]
+    data.favicon = "https://www.google.com/s2/favicons?domain=#{domain}"
+    $(@el).html(@template(data))
     return this
 
   events:
