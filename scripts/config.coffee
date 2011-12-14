@@ -12,6 +12,7 @@ class Config
       @username = data.username
       @password = data.password
       @validCredentials = data.validCredentials or false
+      @private = data.private or false
 
   checkCredentials: (callback) ->
     bookmarks = @createCollection()
@@ -25,6 +26,7 @@ class Config
       username: @username
       password: @password
       validCredentials: @validCredentials
+      private: @private
 
   # Create a collection instance using the class defined by `service`.
   createCollection: ->

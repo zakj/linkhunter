@@ -14,6 +14,9 @@ class BookmarkView extends Backbone.View
     domain = data.url.split('/')[2]
     data.favicon = "https://www.google.com/s2/favicons?domain=#{domain}"
     $(@el).html(@template(data))
+    # Show the link's privacy status if it doesn't match the user's default.
+    if app.config.private isnt @model.get('private')
+      @el.className = 'show-privacy'
     return this
 
   events:
@@ -388,6 +391,7 @@ class ConfigView extends Backbone.View
     app.config.service = @$('[name=service]').val()
     app.config.username = @$('[name=username]').val()
     app.config.password = @$('[name=password]').val()
+    app.config.private = @$('[name=private]').is(':checked')
     app.loadCollection()
     $(@el).addClass('loading')
     $('h2').addClass('feedback').html('Inspecting your hunting license&hellip;')
