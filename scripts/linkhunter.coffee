@@ -87,12 +87,19 @@ class SearchView extends Backbone.View
   initialize: (options) ->
     @bookmarks = options.bookmarks
     @bookmarks.bind('reset', @updateResults)
+    @bookmarks.bind('syncError', @showError)
 
   render: =>
     $(@el).html(@template())
     @resultsView = new BookmarksView(el: @$('ul'))
     @updateResults()
     return this
+
+  showError: (error) =>
+    $(@el).find('.error').text("Sync failed: #{error}")
+
+  hideError: (event) =>
+    $(@el).find('.error').text('')
 
   # On escape keypress: clear the input box or, if it is already empty, close
   # the popup.
@@ -114,6 +121,7 @@ class SearchView extends Backbone.View
   events:
     'blur input': 'refocus'
     'keydown': 'keydown'
+    'click .error': 'hideError'
 
   # Restrict input focus to the search box.
   refocus: (event) =>
