@@ -130,8 +130,9 @@ class SearchView extends Backbone.View
   # Handle keyboard navigation and filter updates.
   keydown: (event) =>
     # Go straight to the add view on ⌘J.
-    otherModifiers = (event.altKey or event.ctrlKey or event.shiftKey)
-    if event.metaKey and event.keyCode is 74 and not otherModifiers
+    modifiers = (event.metaKey or event.ctrlKey)
+    otherModifiers = (event.altKey or event.shiftKey)
+    if modifiers and not otherModifiers and event.keyCode is 74
       app.navigate('add', true)
       return false
     switch event.keyCode

@@ -18,8 +18,9 @@ if document.querySelector('body')
 
 # Open the popup on ⌘J.
 window.addEventListener 'keydown', (event) ->
-  otherModifiers = (event.altKey or event.ctrlKey or event.shiftKey)
-  if event.metaKey and event.keyCode is 74 and not otherModifiers
+  modifiers = (event.metaKey or event.ctrlKey)
+  otherModifiers = (event.altKey or event.shiftKey)
+  if modifiers and not otherModifiers and event.keyCode is 74
     iframe.open()
 
 
