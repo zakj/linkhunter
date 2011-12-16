@@ -169,12 +169,21 @@ label {
     }
   }
 
+  &.show-error {
+    li:first-child {
+      margin-top: @gutter * 2 + 14;
+    }
+  }
+  li:first-child {
+    -webkit-transition: margin-top .5s ease-in-out;
+  }
   .error {
     .italic-text;
     color: @salmon-color;
     cursor: pointer;
     margin-top: @gutter;
     padding-left: @gutter + 2;
+    position: absolute;  // Keeps the element out of flow.
     &:hover {
       text-decoration: line-through;
     }

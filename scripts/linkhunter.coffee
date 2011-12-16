@@ -96,10 +96,10 @@ class SearchView extends Backbone.View
     return this
 
   showError: (error) =>
-    $(@el).find('.error').text("Sync failed: #{error}")
+    $(@el).addClass('show-error').find('.error').text(error)
 
   hideError: (event) =>
-    $(@el).find('.error').text('')
+    $(@el).removeClass('show-error')
 
   # On escape keypress: clear the input box or, if it is already empty, close
   # the popup.
