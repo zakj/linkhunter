@@ -44,7 +44,7 @@ class BookmarkView extends Backbone.View
 class BookmarksView extends Backbone.View
 
   render: (bookmarks) =>
-    @el.html('')
+    @el.empty()
     _.each(bookmarks, @append)
     @selected = @el.children().first().addClass('selected')
     return this
@@ -219,7 +219,9 @@ class AddView extends Backbone.View
     @$('.url a').removeClass('hover')
 
   save: (event) =>
-    @$('h2').html('&nbsp;')
+    feedback = @$('.feedback')
+    # To maintain vertical spacing, the element must always have content.
+    feedback.html('&nbsp;')
     model =
       url: @$('[name=url]').val()
       title: @$('[name=title]').val()
@@ -229,13 +231,13 @@ class AddView extends Backbone.View
     app.bookmarks.create model,
       success: =>
         $(@el).addClass('done')
-        @$('h2').text('Bravo!')
+        feedback.text('Bravo!')
         _.delay((-> app.close()), 750)
       error: (data) =>
         $(@el).removeClass('loading')
         data = 'ajax error' unless _.isString(data)
         msg = @errorMessages[data] or @errorMessages.default
-        @$('h2').text(msg)
+        feedback.text(msg)
     return false
 
 
