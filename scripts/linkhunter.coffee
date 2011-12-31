@@ -413,9 +413,13 @@ class ConfigView extends Backbone.View
       app.config.save()
       if valid
         $('h2').html(chrome.i18n.getMessage('config_auth_success'))
-        app.bookmarks.fetch success: =>
+        success = =>
           $(@el).removeClass('loading')
           app.navigate('search', true)
+        error = =>
+          $(@el).removeClass('loading')
+          $('h2').html(chrome.i18n.getMessage('sync_error_connect'))
+        app.bookmarks.fetch(success: success, error: error)
       else
         $('h2').text(chrome.i18n.getMessage('config_auth_fail'))
         $(@el).removeClass('loading')
