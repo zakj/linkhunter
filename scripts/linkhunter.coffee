@@ -95,7 +95,12 @@ class SearchView extends Backbone.View
     @updateResults()
     return this
 
-  showError: (error) =>
+  showError: (status) =>
+    messages =
+      0: 'sync_error_connect'
+      401: 'sync_error_auth'
+    error = chrome.i18n.getMessage(messages[status])
+    error or= chrome.i18n.getMessage('sync_error_default', status.toString())
     $(@el).addClass('show-error').find('.error').text(error)
 
   hideError: (event) =>
@@ -154,11 +159,6 @@ class AddView extends Backbone.View
   className: 'add'
   template: _.template($('#add-template').html())
 
-  errorMessages:
-    'default': 'You missed!'
-    'ajax error': 'API service failure. What have you done?!'
-    'missing url': 'Or not. Your URL blows.'
-
   render: ->
     $(@el).html(@template(app.config))
     oldTags = @$('fieldset.tags')
@@ -177,7 +177,7 @@ class AddView extends Backbone.View
         bookmark.get('url') is tab.url
       if previous
         ago = moment(previous.get('time')).fromNow()
-        @$('h2').text("You added this link #{ago}.")
+        @$('h2').text(chrome.i18n.getMessage('add_already', ago))
         @$('[name=title]').val(previous.get('title'))
         @tagsView.val(previous.get('tags'))
         @$('[name=private]').attr('checked', previous.get('private'))
@@ -235,9 +235,11 @@ class AddView extends Backbone.View
         _.delay((-> app.close()), 750)
       error: (data) =>
         $(@el).removeClass('loading')
-        data = 'ajax error' unless _.isString(data)
-        msg = @errorMessages[data] or @errorMessages.default
-        feedback.text(msg)
+        msg = if data.status is 401 then 'auth'
+        else if not _.isString(data) then 'ajax'
+        else if data is 'missing url' then 'url'
+        else 'default'
+        feedback.text(chrome.i18n.getMessage("add_error_#{msg}"))
     return false
 
 
@@ -405,16 +407,17 @@ class ConfigView extends Backbone.View
     app.config.private = @$('[name=private]').is(':checked')
     app.loadCollection()
     $(@el).addClass('loading')
-    $('h2').addClass('feedback').html('Inspecting your hunting license&hellip;')
+    $('h2').addClass('feedback').html(
+      chrome.i18n.getMessage('config_auth_check'))
     app.config.checkCredentials (valid) =>
       app.config.save()
       if valid
-        $('h2').html('Rounding up your links&hellip;')
+        $('h2').html(chrome.i18n.getMessage('config_auth_success'))
         app.bookmarks.fetch success: =>
           $(@el).removeClass('loading')
           app.navigate('search', true)
       else
-        $('h2').text("Blast! Somethin' smells rotten.")
+        $('h2').text(chrome.i18n.getMessage('config_auth_fail'))
         $(@el).removeClass('loading')
     return false
 

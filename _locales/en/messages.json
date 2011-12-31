@@ -1,0 +1,15 @@
+{
+  "add_error_auth": { "message": "Blast! Time to update your hunting license." },
+  "add_error_ajax": { "message": "Server is playin' hard to get. Try hunting later." },
+  "add_error_url": { "message": "Or not. Your URL blows." },
+  "add_error_default": { "message": "You missed!" },
+  "add_already": { "message": "You added this link $1." },
+
+  "config_auth_check": { "message": "Inspecting your hunting license…" },
+  "config_auth_success": { "message": "Rounding up your links…" },
+  "config_auth_fail": { "message": "Blast! Somethin' smells rotten." },
+
+  "sync_error_connect": { "message": "Server is playin' hard to get. Try hunting later." },
+  "sync_error_auth": { "message": "Blast! Time to update your hunting license." },
+  "sync_error_default": { "message": "Well shucks. Something's busted for serious. ($1)" }
+}

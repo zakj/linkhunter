@@ -110,12 +110,7 @@ class BookmarkCollection extends CachedCollection
     super(models, options)
     @settings = _.defaults options, @ajaxOptions,
       error: (jqXHR, textStatus, errorThrown) =>
-        errorMsgs =
-          0: 'Unable to connect.'
-          401: 'Authentication failure.'
-        errorMsg = errorMsgs[jqXHR.status]
-        errorMsg or= "Unknown error; status code #{jqXHR.status}."
-        @trigger('syncError', errorMsg)
+        @trigger('syncError', jqXHR.status)
 
   # Sort by most-recent first.
   comparator: (bookmark) ->
