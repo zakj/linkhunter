@@ -37,7 +37,7 @@ iframe =
       css = document.createElement('link')
       css.rel = 'stylesheet'
       css.href = chrome.extension.getURL('styles/iframe.css')
-      document.querySelector('head').appendChild(css)
+      document.querySelector('body').appendChild(css)
       @el = document.createElement('div')
       @el.className = @className
       frame = document.createElement('iframe')
