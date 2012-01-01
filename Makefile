@@ -7,7 +7,7 @@ CSS=$(addprefix compiled/,$(notdir $(LESS:less=css)))
 DOCS=$(addprefix docs/,$(notdir $(COFFEE:coffee=html)))
 
 compiled/%.js: scripts/%.coffee compiled
-	coffee --compile --bare --print $< | uglifyjs >$@
+	$(NODE_BIN)/coffee --compile --bare --print $< | uglifyjs >$@
 
 compiled/%.css: styles/%.less compiled
 	$(NODE_BIN)/lessc -x $< $@
@@ -25,4 +25,10 @@ clean:
 	rm -rf compiled docs
 
 watch: compiled
-	coffee --compile --bare --watch --output compiled $(COFFEE)
+	$(NODE_BIN)/coffee --compile --bare --watch --output compiled $(COFFEE)
+
+release: default
+	mkdir release
+	git archive master | tar -C release -xf -
+	cd release && make && zip -r ../linkhunter-$$(awk -F '"' '/version/ { print $$4 }' manifest.json).zip *
+	rm -rf release
