@@ -14,6 +14,11 @@ compiled/%.css: styles/%.less compiled
 
 default: $(JS) $(CSS)
 
+pack: default
+	'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' \
+		--pack-extension=$(shell pwd) \
+		--pack-extension-key=$$HOME/Desktop/Linkhunter/linkhunter.pem
+	
 compiled:
 	mkdir -p compiled
 
