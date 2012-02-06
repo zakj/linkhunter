@@ -47,6 +47,7 @@ class CachedCollection extends Backbone.Collection
     @_lastUpdatedKey = "#{@name}:lastUpdated"
     bgStorage.getItem(@_lastUpdatedKey).then (lastUpdated) =>
       @lastUpdated = moment(lastUpdated or 0)
+      @lastUpdated = moment(0) if isNaN(@lastUpdated)
       needUpdated = false
       resolve()
 
@@ -62,7 +63,7 @@ class CachedCollection extends Backbone.Collection
   _updateCache: =>
     @_saveCache()
     @lastUpdated = moment()
-    bgStorage.setItem(@_lastUpdatedKey, @lastUpdated.date)
+    bgStorage.setItem(@_lastUpdatedKey, @lastUpdated.date())
 
 
 ## Bookmark
