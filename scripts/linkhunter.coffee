@@ -99,6 +99,7 @@ class SearchView extends Backbone.View
     messages =
       0: 'sync_error_connect'
       401: 'sync_error_auth'
+      429: 'sync_error_toomany'
     error = chrome.i18n.getMessage(messages[status])
     error or= chrome.i18n.getMessage('sync_error_default', status.toString())
     $(@el).addClass('show-error').find('.error').text(error)

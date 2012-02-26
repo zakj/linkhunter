@@ -63,7 +63,7 @@ class CachedCollection extends Backbone.Collection
   _updateCache: =>
     @_saveCache()
     @lastUpdated = moment()
-    bgStorage.setItem(@_lastUpdatedKey, @lastUpdated.date())
+    bgStorage.setItem(@_lastUpdatedKey, @lastUpdated.native())
 
 
 ## Bookmark
@@ -110,8 +110,11 @@ class BookmarkCollection extends CachedCollection
   initialize: (models, options) ->
     super(models, options)
     @settings = _.defaults options, @ajaxOptions,
-      error: (jqXHR, textStatus, errorThrown) =>
-        @trigger('syncError', jqXHR.status)
+      error: (a, b) =>
+        # This handler may be called by either Backbone or jQuery, with
+        # different parameters.
+        status = a.status or b.status
+        @trigger('syncError', status)
 
   # Sort by most-recent first.
   comparator: (bookmark) ->

@@ -11,5 +11,6 @@
 
   "sync_error_connect": { "message": "Server is playin' hard to get. Try hunting later." },
   "sync_error_auth": { "message": "Blast! Time to update your hunting license." },
+  "sync_error_toomany": { "message": "Seems like you're updatin' too fast for the server!" },
   "sync_error_default": { "message": "Well shucks. Something's busted for serious. ($1)" }
 }
