@@ -29,8 +29,8 @@ window.addEventListener 'keydown', (event) ->
 # a container, the animation's origin is relative to the body, so the page
 # scrolls to the top when Linkhunter opens.
 iframe =
-  className: 'linkhunter-iframe-container'
-  el: document.querySelector(".#{@className}")
+  id: 'linkhunter-iframe-container'
+  el: document.querySelector("##{@id}")
 
   open: ->
     if not @el?
@@ -39,7 +39,7 @@ iframe =
       css.href = chrome.extension.getURL('styles/iframe.css')
       document.querySelector('body').appendChild(css)
       @el = document.createElement('div')
-      @el.className = @className
+      @el.id = @id
       frame = document.createElement('iframe')
       frame.src = chrome.extension.getURL('popup.html')
       @el.appendChild(frame)
