@@ -7,10 +7,10 @@
 
   "config_auth_check": { "message": "Inspecting your hunting license…" },
   "config_auth_success": { "message": "Rounding up your links…" },
-  "config_auth_fail": { "message": "Blast! Somethin' smells rotten." },
+  "config_auth_fail": { "message": "Oof! $1 rejected that username/password." },
 
   "sync_error_connect": { "message": "Server is playin' hard to get. Try hunting later." },
-  "sync_error_auth": { "message": "Blast! Time to update your hunting license." },
+  "sync_error_auth": { "message": "Oof! Seems your username/password need some updating." },
   "sync_error_toomany": { "message": "Seems like you're updatin' too fast for the server!" },
   "sync_error_default": { "message": "Well shucks. Something's busted for serious. ($1)" }
 }
