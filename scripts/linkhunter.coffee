@@ -43,10 +43,14 @@ class BookmarkView extends Backbone.View
 # Display a list of bookmarks and track the currently-selected one.
 class BookmarksView extends Backbone.View
 
+  initialize: ->
+    @container = @el.parent('.results')
+
   render: (bookmarks) =>
     @el.empty()
     _.each(bookmarks, @append)
     @selected = @el.children().first().addClass('selected')
+    @container.toggleClass('empty', bookmarks.length is 0)
     return this
 
   append: (model) =>
