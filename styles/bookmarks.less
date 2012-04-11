@@ -45,11 +45,13 @@
 
 .medium-text() {
   font-size: 11px;
+  font-weight: normal;
   color: #666;
 }
 
 .light-text() {
   font-size: 11px;
+  font-weight: normal;
   color: #999;
 }
 
@@ -196,7 +198,6 @@ label {
     border-radius: 5px;
     margin-top: @gutter;
     overflow: hidden;
-    position: static;
   }
   .results.empty { display: none; }
   ul {
@@ -206,6 +207,16 @@ label {
     max-height: @item-height * 10 - 2;
     overflow-x: hidden;
     overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 2px;
+    }
+    &::-webkit-scrollbar-track {
+      background-color: #ddd;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #900;
+    }
   }
   li {
     background-color: @background-color;
@@ -214,8 +225,6 @@ label {
     cursor: pointer;
     height: @item-height;
     list-style: none;
-    padding: @gutter;
-    position: relative;
     &:first-child, &:last-child {
       // Account for the missing top or bottom border, since we're using
       // border-box sizing.
@@ -248,6 +257,7 @@ label {
       .img-wrapper;
       width: @img-size;
       height: @img-size;
+      margin: @gutter - 1;
       padding: (@img-size - 16 - 2) / 2;
       position: absolute;  // For privacy stacking order.
     }
@@ -293,27 +303,32 @@ label {
     }
   }
 
-  .title, .url, .age {
-    position: absolute;
+  .img {
+    float: left;
+    position: relative;
+    width: @item-height - 2;
+    height: @item-height - 2;
   }
-  .title {
+  h2, h3, .age {
+    margin-right: @gutter;
+  }
+  h2 {
     .ellipsis;
     .bold-text;
-    left: @text-padding;
-    top: @gutter;
-    width: @width - @text-padding - (@gutter * 2);
+    padding-top: 9px;
   }
-  .url {
+  @age-width: 80px;
+  h3, .age { margin-top: 2px; }
+  h3 {
     .ellipsis;
     .medium-text;
-    left: @text-padding;
-    bottom: @gutter;
-    width: @width - @text-padding - (@gutter * 2) - 80;
+    float: left;
+    max-width: @width - @item-height - @age-width - @gutter;
   }
   .age {
     .light-text;
-    right: @gutter;
-    bottom: @gutter;
+    float: right;
+    max-width: @age-width;
   }
 }
 

@@ -17,12 +17,14 @@
 </script>
 
 <script id=bookmark-template type=text/template>
-  <div class="privacy-border"></div>
-  <div class="privacy {{ private ? 'private' : 'public' }}"></div>
-  <img src="{{ favicon }}" alt="">
-  <div class=title>{{ title }}</div>
-  <div class=url>{{ url }}</div>
-  <div class=age>{{ moment(time).fromNow() }}</div>
+  <div class=img>
+    <div class=privacy-border></div>
+    <div class="privacy {{ private ? 'private' : 'public' }}"></div>
+    <img src="{{ favicon }}" alt="">
+  </div>
+  <h2>{{ title }}</h2>
+  <h3>{{ url }}</h3>
+  <span class=age>{{ moment(time).fromNow() }}</span>
 </script>
 
 
