@@ -115,6 +115,16 @@ class BookmarkCollection extends CachedCollection
         # different parameters.
         status = a.status or b.status
         @trigger('syncError', status)
+    # Chrome 19 no longer honors HTTP Basic Auth passed in the URL (which is
+    # what jQuery does when you pass it the username/password parameters).
+    # Convert here to an Authorization header and remove the username/password
+    # params for clarity in the debugger.
+    if options.username and options.password
+      base64 = btoa([options.username, options.password].join(':'))
+      @settings.beforeSend = (xhr) ->
+        xhr.setRequestHeader('Authorization', "Basic #{base64}")
+      delete @settings.username
+      delete @settings.password
 
   # Sort by most-recent first.
   comparator: (bookmark) ->
@@ -183,8 +193,8 @@ class DeliciousCollection extends BookmarkCollection
     $.ajax(@updateUrl, settings)
 
   isAuthValid: (callback) ->
-    # Only attempt the ajax call when username and password are set.
-    if @settings.username and @settings.password
+    # Only attempt the ajax call if we've set up an auth header.
+    if @settings.beforeSend
       settings = _.extend _.clone(@settings),
         dataType: 'xml'
         success: (data) -> callback(true)
