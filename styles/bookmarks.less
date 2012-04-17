@@ -1,5 +1,6 @@
 @width: 400px;
 @item-height: 50px;
+@item-padding: 9px;
 @input-height: 30px;
 @img-size: @input-height;
 @gutter: 10px;
@@ -225,6 +226,7 @@ label {
     cursor: pointer;
     height: @item-height;
     list-style: none;
+    padding: @item-padding;
     &:first-child, &:last-child {
       // Account for the missing top or bottom border, since we're using
       // border-box sizing.
@@ -232,7 +234,7 @@ label {
     }
     &:first-child {
       border-top: none;
-      &:after { display: none; }
+      &:before { display: none; }
     }
     &:last-child {
       border-bottom: none;
@@ -243,12 +245,15 @@ label {
     background: @highlight-color;
     border-top-color: @dark-border-color;
     // Create a second top border to create the illusion of depth.
-    &:after {
-      border-top: 1px solid @background-color;
+    // position: absolute would cause it to bleed out of the radiused corners,
+    // so instead we hack the margins.
+    &:before {
+      background-color: @background-color;
       content: "";
       display: block;
-      position: absolute; left: 0; top: 0;
-      width: @width - 2;
+      height: 1px;
+      margin: -@item-padding -@item-padding (@item-padding - 1px);
+      width: @width;
     }
   }
 
@@ -257,7 +262,6 @@ label {
       .img-wrapper;
       width: @img-size;
       height: @img-size;
-      margin: @gutter - 1;
       padding: (@img-size - 16 - 2) / 2;
       position: absolute;  // For privacy stacking order.
     }
@@ -305,17 +309,13 @@ label {
 
   .img {
     float: left;
+    margin-right: @item-padding;
     position: relative;
-    width: @item-height - 2;
-    height: @item-height - 2;
-  }
-  h2, h3, .age {
-    margin-right: @gutter;
+    width: @img-size; height: @img-size;
   }
   h2 {
     .ellipsis;
     .bold-text;
-    padding-top: 9px;
   }
   @age-width: 80px;
   h3, .age { margin-top: 2px; }
