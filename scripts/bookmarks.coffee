@@ -86,7 +86,8 @@ class Bookmark extends Backbone.Model
 class BookmarkCollection extends CachedCollection
   name: 'bookmarks'
   model: Bookmark
-  maxResults: 10
+  # Chosen mostly arbitrarily.
+  maxResults: 155
 
   # Subclasses should implement a `fetchIfStale` method. It must call `fetch`
   # if the remote data has been updated since `@lastUpdated`.
