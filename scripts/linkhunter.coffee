@@ -47,15 +47,34 @@ class BookmarksView extends Backbone.View
     @container = @el.parent('.results')
 
   render: (bookmarks) =>
+    # Re-rendering is a waste if the contents are the same.
+    return if _.isEqual(@previousBookmarks, bookmarks)
     @el.empty()
-    _.each(bookmarks, @append)
+    # Rendering each bookmark takes only about 3ms, but at around ~100 that
+    # stacks up enough to be a noticeable delay when opening the popup. As a
+    # workaround, add enough to fill the popup immediately, and append the rest
+    # a moment later. It's only useful to jump through this hoop the first
+    # time, so subsequent renders handle all bookmarks at once.
+    if not @previousBookmarks?
+      # Make sure we keep hitting this path until our bookmarks collection has
+      # been populated for the first time.
+      return unless bookmarks.length > 0
+      @append(_.first(bookmarks, 10))
+      _.delay((=> @append(_.rest(bookmarks, 10))), 50)
+    else
+      @append(bookmarks)
+    @el.scrollTop(0)
     @selected = @el.children().first().addClass('selected')
     @container.toggleClass('empty', bookmarks.length is 0)
+    @previousBookmarks = bookmarks
     return this
 
-  append: (model) =>
-    view = new BookmarkView(model: model)
-    @el.append(view.render().el)
+  append: (bookmarks) =>
+    bookmarks = [bookmarks] unless _.isArray(bookmarks)
+    frag = document.createDocumentFragment()
+    _.each bookmarks, (bookmark) =>
+      frag.appendChild(new BookmarkView(model: bookmark).render().el)
+    @el.append(frag)
 
   events:
     'mouseover li': 'selectHovered'
