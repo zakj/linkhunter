@@ -20,7 +20,7 @@ if document.querySelector('body')
 window.addEventListener 'keydown', (event) ->
   modifiers = (event.metaKey or event.ctrlKey)
   otherModifiers = (event.altKey or event.shiftKey)
-  if modifiers and not otherModifiers and event.keyCode is 74
+  if modifiers and not otherModifiers and event.keyCode is 66
     iframe.open()
 
 

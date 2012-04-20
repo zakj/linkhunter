@@ -138,7 +138,7 @@ class SearchView extends Backbone.View
     # Go straight to the add view on ⌘J.
     modifiers = (event.metaKey or event.ctrlKey)
     otherModifiers = (event.altKey or event.shiftKey)
-    if modifiers and not otherModifiers and event.keyCode is 74
+    if modifiers and not otherModifiers and event.keyCode is 66
       app.navigate('add', true)
       return false
     switch event.keyCode
