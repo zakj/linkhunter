@@ -61,7 +61,7 @@ class BookmarksView extends Backbone.View
     'mouseover li': 'selectHovered'
 
   selectHovered: (event) =>
-    @select($(event.currentTarget))
+    @select($(event.currentTarget)) unless @scrolling
 
   select: (item) ->
     @selected?.removeClass('selected')
@@ -69,11 +69,29 @@ class BookmarksView extends Backbone.View
 
   selectNext: =>
     next = @selected.next()
-    @select(next) if next.length
+    @scrollTo(next) if next.length
 
   selectPrevious: =>
     previous = @selected.prev()
-    @select(previous) if previous.length
+    @scrollTo(previous) if previous.length
+
+  scrollTo: (item) ->
+    # To find the actual scrollTop value for the item, start with its document
+    # offset, correct for scrolling, and correct for its parent placement.
+    itemTop = item.offset().top + @el.scrollTop() - @el.offset().top
+    # We want to keep the selected item in the middle of the scroll area where
+    # possible, so don't scroll all the way to itemTop.
+    position = itemTop - @el.height() / 2 + 30
+    # Track that a scroll is happening so that we can safely ignore mouseover
+    # events. Simply deferring @scrolling = false means that rapid calls to
+    # this method can stack up resetting scrolling, so instead we reset
+    # @scrolling only when this method hasn't been called for 100ms (more than
+    # enough time for the scroll to happen, but probably not enough time for a
+    # user to switch from keyboard to mouse navigation).
+    @scrolling = true
+    @el.scrollTop(position)
+    (@finishScrolling or= _.debounce((=> @scrolling = false), 100))()
+    @select(item)
 
   visitSelected: =>
     @selected.click()
