@@ -7,6 +7,7 @@
 @text-padding: @img-size + @gutter * 2;
 @body-padding: @gutter;
 @privacy-badge-size: 15px;
+@scroll-width: 2px;
 
 @text-color: #333;
 @background-color: #f1f1f1;
@@ -90,8 +91,8 @@ body {
 }
 
 #panel {
-  padding: @gutter - 4px;
-  width: @width + @gutter * 2;
+  padding: @gutter - 4;
+  width: @width + (@gutter - 4) * 2;
 }
 
 .in-iframe #panel {
@@ -101,6 +102,7 @@ body {
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.4);
   margin: 15px 15px 50px auto;
   padding: @gutter;
+  width: @width + @gutter * 2 + 2;
 }
 
 img {
@@ -210,7 +212,7 @@ label {
     overflow-y: auto;
 
     &::-webkit-scrollbar {
-      width: 2px;
+      width: @scroll-width;
     }
     &::-webkit-scrollbar-track {
       background-color: #ddd;
@@ -318,17 +320,20 @@ label {
     .bold-text;
   }
   @age-width: 80px;
-  h3, .age { margin-top: 2px; }
+  // The extra 2px are from the .results border.
+  @url-width: @width - @item-padding * 4 - @img-size - @age-width - @scroll-width - 2;
+  h3, .age { float: left; margin-top: 2px; }
   h3 {
     .ellipsis;
     .medium-text;
-    float: left;
-    max-width: @width - @item-height - @age-width - @gutter;
+    width: @url-width;
   }
   .age {
     .light-text;
-    float: right;
-    max-width: @age-width;
+    margin-left: @item-padding;
+    text-align: right;
+    white-space: nowrap;
+    width: @age-width;
   }
 }
 
