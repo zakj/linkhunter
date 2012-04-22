@@ -59,8 +59,9 @@ class BookmarksView extends Backbone.View
       # Make sure we keep hitting this path until our bookmarks collection has
       # been populated for the first time.
       return unless bookmarks.length > 0
-      @append(_.first(bookmarks, 10))
-      _.delay((=> @append(_.rest(bookmarks, 10))), 50)
+      bookmarksPerPage = 9
+      @append(_.first(bookmarks, bookmarksPerPage))
+      _.delay((=> @append(_.rest(bookmarks, bookmarksPerPage))), 50)
     else
       @append(bookmarks)
     @el.scrollTop(0)
@@ -100,7 +101,7 @@ class BookmarksView extends Backbone.View
     itemTop = item.offset().top + @el.scrollTop() - @el.offset().top
     # We want to keep the selected item in the middle of the scroll area where
     # possible, so don't scroll all the way to itemTop.
-    position = itemTop - @el.height() / 2 + 30
+    position = itemTop - @el.height() / 2 + 25
     # Track that a scroll is happening so that we can safely ignore mouseover
     # events. Simply deferring @scrolling = false means that rapid calls to
     # this method can stack up resetting scrolling, so instead we reset

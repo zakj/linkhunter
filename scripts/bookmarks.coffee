@@ -87,7 +87,7 @@ class BookmarkCollection extends CachedCollection
   name: 'bookmarks'
   model: Bookmark
   # Chosen mostly arbitrarily.
-  maxResults: 155
+  maxResults: 100
 
   # Subclasses should implement a `fetchIfStale` method. It must call `fetch`
   # if the remote data has been updated since `@lastUpdated`.
