@@ -14,6 +14,7 @@
   -webkit-animation-name: popIn;
   -webkit-animation-duration: 0.25s;
   -webkit-animation-timing-function: ease-out;
+  -webkit-backface-visibility: hidden;
 }
 
 @-webkit-keyframes popIn {
