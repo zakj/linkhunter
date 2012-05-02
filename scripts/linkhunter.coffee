@@ -1,6 +1,9 @@
 # Use Mustache-style templates.
 _.templateSettings = {interpolate: /\{\{ *(.+?) *\}\}/g}
 
+# Shorten "a few seconds ago".
+moment.relativeTime.s = 'moments'
+
 
 ## BookmarkView
 
