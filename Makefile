@@ -2,7 +2,7 @@ COFFEE=$(wildcard scripts/*.coffee)
 LESS=styles/bookmarks.less
 NODE_BIN=$(shell npm bin)
 
-JS=$(addprefix compiled/,$(notdir $(COFFEE:coffee=js)))
+JS=$(addprefix compiled/,$(notdir $(COFFEE:coffee=js))) compiled/templates.js
 CSS=$(addprefix compiled/,$(notdir $(LESS:less=css)))
 DOCS=$(addprefix docs/,$(notdir $(COFFEE:coffee=html)))
 
@@ -13,6 +13,9 @@ compiled/%.css: styles/%.less compiled
 	$(NODE_BIN)/lessc -x $< $@
 
 default: $(JS) $(CSS)
+
+compiled/templates.js: compiled templates/*
+	$(NODE_BIN)/handlebars -f $@ templates
 
 pack: default
 	'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' \

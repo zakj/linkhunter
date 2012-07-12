@@ -1,4 +1,5 @@
 {
+  "manifest_version": 2,
   "name": "Linkhunter",
   "version": "1.2.0",
   "default_locale": "en",
@@ -8,7 +9,9 @@
     "128": "images/mark/128.png",
     "48": "images/mark/48.png"
   },
-  "background_page": "background.html",
+  "background": {
+    "scripts": ["compiled/background.js"]
+  },
   "browser_action": {
     "default_icon": "images/mark/19.png",
     "default_title": "Linkhunter",
@@ -20,6 +23,10 @@
       "js": ["compiled/content.js"],
       "run_at": "document_end"
     }
+  ],
+  "web_accessible_resources": [
+    "popup.html",
+    "styles/iframe.css"
   ],
   "permissions": [
     "https://api.del.icio.us/*",

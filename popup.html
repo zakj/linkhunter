@@ -5,100 +5,12 @@
 
 <div id=panel></div>
 
-
-<script id=search-template type=text/template>
-  <header>
-    <input autofocus>
-    <a class=button href=#add><img src=/images/icons/add-link.png width=14 height=14 alt="Add Bookmark"></a>
-    <a class=button href=#config><img src=/images/icons/config.png width=14 height=14 alt="Settings"></a>
-  </header>
-  <p class=error></p>
-  <div class=results><ul></ul></div>
-</script>
-
-<script id=bookmark-template type=text/template>
-  <div class=img>
-    <div class=privacy-border></div>
-    <div class="privacy {{ private ? 'private' : 'public' }}"></div>
-    <img src="{{ favicon }}" alt="">
-  </div>
-  <h2>{{ title }}</h2>
-  <h3>{{ url }}</h3>
-  <span class=age>{{ moment(time).fromNow() }}</span>
-</script>
-
-
-<script id=config-template type=text/template>
-  <h1>
-    <div class=logo></div>
-    <img src=/images/linkhunter.png alt=Linkhunter width=135 height=17>
-  </h1>
-  <h2>Find your links on Delicious or Pinboard.</h2>
-  <a class=close></a>
-
-  <form>
-    <div id=service class={{ service }}>
-      <input name=service type=hidden value={{ service }}>
-      <a class=delicious>Delicious</a>
-      <span class=switch><span class=knob></span></span>
-      <a class=pinboard>Pinboard</a>
-    </div>
-    <input name=username placeholder=username value="{{ username }}">
-    <input name=password type=password placeholder=password value="{{ password }}">
-    <label><input name=private type=checkbox {{ private ? 'checked' : '' }}>
-      Mark new links private by default</label>
-
-    <button type=submit>
-      Go hunting &nbsp;<img src=/images/icons/arrow-right.png width=15 height=6 alt="">
-    </button>
-  </form>
-
-  <a href=http://madebycabin.com/ target=_blank class=made-by>Made by Cabın</a>
-</script>
-
-
-<script id=add-template type=text/template>
-  <h1>
-    <div class=logo></div>
-    <img src=/images/add-link.png alt="Add Link" width=106 height=18>
-  </h1>
-  <h2 class=feedback>&nbsp;</h2>
-  <a href=#search class=close></a>
-
-  <form>
-    <fieldset class=title>
-      <div class=input-fade><input name=title placeholder=title></div>
-      <div class="input-fade edit-url"><input name=url placeholder=URL></div>
-    </fieldset>
-    <div class=url><a class=text></a><a class=icon></a></div>
-    <hr>
-    <fieldset class=tags>
-      <input name=tags placeholder="add tags">
-    </fieldset>
-    <hr>
-    <label><input name=private type=checkbox {{ private ? 'checked' : '' }}>
-      This link is private</label>
-    <button type=submit>Save to {{ service }}</button>
-  </form>
-</script>
-
-
-<script id=tags-template type=text/template>
-  <div class=pseudo-input>
-    <ul class=tags></ul>
-    <input name="{{ name }}" value="{{ value }}">
-    <span class=placeholder>{{ placeholder }}</span>
-  </div>
-  <ul class=suggested-tags></ul>
-</script>
-
-
 <script src=vendor/jquery-1.7.min.js></script>
 <script src=vendor/underscore-min.js></script>
 <script src=vendor/backbone-min.js></script>
 <script src=vendor/moment.min.js></script>
+<script src=vendor/handlebars.runtime.min.js></script>
+<script src=compiled/templates.js></script>
 <script src=compiled/bookmarks.js></script>
 <script src=compiled/config.js></script>
 <script src=compiled/linkhunter.js></script>
-
-<script>app = new Linkhunter;</script>

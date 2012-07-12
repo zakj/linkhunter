@@ -1,0 +1,22 @@
+<h1>
+  <div class=logo></div>
+  <img src=/images/add-link.png alt="Add Link" width=106 height=18>
+</h1>
+<h2 class=feedback>&nbsp;</h2>
+<a href=#search class=close></a>
+
+<form>
+  <fieldset class=title>
+    <div class=input-fade><input name=title placeholder=title></div>
+    <div class="input-fade edit-url"><input name=url placeholder=URL></div>
+  </fieldset>
+  <div class=url><a class=text></a><a class=icon></a></div>
+  <hr>
+  <fieldset class=tags>
+    <input name=tags placeholder="add tags">
+  </fieldset>
+  <hr>
+  <label><input name=private type=checkbox {{#if private}}checked{{/if}}>
+    This link is private</label>
+  <button type=submit>Save to {{service}}</button>
+</form>

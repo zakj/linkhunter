@@ -1,6 +1,3 @@
-# Use Mustache-style templates.
-_.templateSettings = {interpolate: /\{\{ *(.+?) *\}\}/g}
-
 # Shorten "a few seconds ago".
 moment.relativeTime.s = 'moments'
 
@@ -10,12 +7,13 @@ moment.relativeTime.s = 'moments'
 # Display a single bookmark as a clickable element.
 class BookmarkView extends Backbone.View
   tagName: 'li'
-  template: _.template($('#bookmark-template').html())
+  template: Handlebars.templates.bookmark
 
   render: ->
     data = @model.toJSON()
     domain = data.url.split('/')[2]
     data.favicon = "https://www.google.com/s2/favicons?domain=#{domain}"
+    data.age = moment(data.time).fromNow()
     $(@el).html(@template(data))
     # Show the link's privacy status if it doesn't match the user's default.
     if app.config.private isnt @model.get('private')
@@ -127,7 +125,7 @@ class BookmarksView extends Backbone.View
 class SearchView extends Backbone.View
   tagName: 'form'
   className: 'search'
-  template: _.template($('#search-template').html())
+  template: Handlebars.templates.search
 
   initialize: (options) ->
     @bookmarks = options.bookmarks
@@ -203,7 +201,7 @@ class SearchView extends Backbone.View
 class AddView extends Backbone.View
   tagName: 'div'
   className: 'add'
-  template: _.template($('#add-template').html())
+  template: Handlebars.templates.add
 
   render: ->
     $(@el).html(@template(app.config))
@@ -294,7 +292,7 @@ class AddView extends Backbone.View
 # Handle adding/removing tags and displaying suggested tags.
 class TagsView extends Backbone.View
   tagName: 'fieldset'
-  template: _.template($('#tags-template').html())
+  template: Handlebars.templates.tags
 
   initialize: (options) ->
     @templateData =
@@ -412,7 +410,7 @@ class TagsView extends Backbone.View
 class ConfigView extends Backbone.View
   tagName: 'div'
   className: 'config'
-  template: _.template($('#config-template').html())
+  template: Handlebars.templates.config
 
   render: ->
     $(@el).html(@template(app.config))
@@ -537,3 +535,7 @@ class Linkhunter extends Backbone.Router
 
   editConfig: ->
     @show(new ConfigView)
+
+
+
+app = new Linkhunter
