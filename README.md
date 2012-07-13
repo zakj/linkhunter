@@ -24,7 +24,7 @@ technology:
 License
 -------
 
-Copyright (c) 2011-2012 [Cabın][]
+Copyright (c) 2011-2012 [Cabin][]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -45,7 +45,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 
 
-[Cabın]: http://madebycabin.com/
+[Cabin]: http://madebycabin.com/
 [Google Chrome]: http://www.google.com/chrome
 [Delicious]: http://www.delicious.com/
 [Pinboard]: http://pinboard.in/
