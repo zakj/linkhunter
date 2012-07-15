@@ -19,6 +19,8 @@ chrome.extension.onMessage.addListener (message, sender, sendResponse) ->
       sendResponse()
     when 'enableInPagePopup'
       chrome.tabs.getSelected null, (tab) ->
+        # Ignore chrome tabs, where we can't modify the page.
+        return if tab.url.indexOf('chrome://') is 0
         chrome.browserAction.setPopup(tabId: tab.id, popup: '')
       sendResponse()
     when 'closePopup'

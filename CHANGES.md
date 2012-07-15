@@ -3,6 +3,7 @@
 ## 1.2.1
 
 * Updated Chrome manifest to version 2.
+* Fixed popup for Chrome's "new tab" page.
 
 ## 1.2.0
 
