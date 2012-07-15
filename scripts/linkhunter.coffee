@@ -483,7 +483,9 @@ class Linkhunter extends Backbone.Router
     $('body').addClass('in-iframe') if @iframed
     @config = new Config
     @config.loaded.then =>
-      @loadCollection().loaded.then => @bookmarks?.fetchIfStale()
+      @loadCollection().loaded.then =>
+        if @config.validCredentials
+          @bookmarks?.fetchIfStale()
       Backbone.history.start()
     @panel = $('#panel')
     $(window).on('keydown', @handleEscapeKey)
