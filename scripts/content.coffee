@@ -1,19 +1,19 @@
-# Listen for requests to open or close the popup.
-chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
-  switch request
+# Listen for messages to open or close the popup.
+chrome.extension.onMessage.addListener (message, sender, sendResponse) ->
+  switch message
     when 'openPopup' then iframe.open()
     when 'closePopup' then iframe.close()
     when 'togglePopup' then iframe.toggle()
-    # Don't sendResponse unless we handled the request.
-    else return
-  sendResponse()
+    # Don't sendResponse unless we handled the message.
+    else return false
+  return true
 
 
 # Instruct the background page to intercept the default popup and open in an
 # iframe instead, so long as we have a body to which we can append (frameset
 # pages do not, and aren't worth fighting for).
 if document.querySelector('body')
-  chrome.extension.sendRequest(method: 'enableInPagePopup')
+  chrome.extension.sendMessage(method: 'enableInPagePopup')
 
 
 # Open the popup on ⌘J.

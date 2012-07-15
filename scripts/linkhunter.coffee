@@ -26,7 +26,7 @@ class BookmarkView extends Backbone.View
   click: (event) =>
     # If cmd- or ctrl-clicked, open the link in a new background tab.
     if event.metaKey or event.ctrlKey
-      chrome.extension.sendRequest(method: 'createTab', url: @model.get('url'))
+      chrome.extension.sendMessage(method: 'createTab', url: @model.get('url'))
     # Otherwise, open the link in the current tab and close the popup if
     # necessary.
     else
@@ -211,7 +211,7 @@ class AddView extends Backbone.View
       placeholder: oldTags.find('input').attr('placeholder')
     oldTags.replaceWith(@tagsView.render().el)
     _.defer(=> @tagsView.input.focus())
-    chrome.extension.sendRequest method: 'getCurrentTab', (tab) =>
+    chrome.extension.sendMessage method: 'getCurrentTab', (tab) =>
       app.bookmarks.suggestTags? tab.url, (tags) =>
         @tagsView.addSuggested(tag) for tag in tags
       @$('.url .text').text(tab.url)
@@ -510,7 +510,7 @@ class Linkhunter extends Backbone.Router
 
   close: =>
     if @iframed
-      chrome.extension.sendRequest(method: 'closePopup')
+      chrome.extension.sendMessage(method: 'closePopup')
     else
       window.close()
 

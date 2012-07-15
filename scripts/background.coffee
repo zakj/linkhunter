@@ -1,21 +1,21 @@
-# Listen for Chrome extension requests. Each request should be an object with a
+# Listen for Chrome extension messages. Each message should be an object with a
 # `method` attribute. Other object attributes vary based on the method.
 # "getItem" and "setItem" provide an interface to localStorage (as content
 # scripts cannot access it directly). "createTab" opens a new background tab.
 # "enableInPagePopup" removes the default popup from the browser action button,
 # allowing our listener below to open the popup in an iframe. "closePopup"
-# creates a new request to the content script to close the iframe.
-chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
-  switch request.method
+# creates a new message to the content script to close the iframe.
+chrome.extension.onMessage.addListener (message, sender, sendResponse) ->
+  switch message.method
     when 'getItem'
-      sendResponse(localStorage.getItem(request.key))
+      sendResponse(localStorage.getItem(message.key))
     when 'setItem'
-      sendResponse(localStorage.setItem(request.key, request.value))
+      sendResponse(localStorage.setItem(message.key, message.value))
     when 'getCurrentTab'
       chrome.tabs.getSelected null, (tab) ->
         sendResponse(tab)
     when 'createTab'
-      chrome.tabs.create(url: request.url, selected: false)
+      chrome.tabs.create(url: message.url, selected: false)
       sendResponse()
     when 'enableInPagePopup'
       chrome.tabs.getSelected null, (tab) ->
@@ -23,10 +23,12 @@ chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
       sendResponse()
     when 'closePopup'
       chrome.tabs.getSelected null, (tab) ->
-        chrome.tabs.sendRequest(tab.id, 'closePopup')
+        chrome.tabs.sendMessage(tab.id, 'closePopup')
       sendResponse()
+    else return false
+  return true
 
 
 # Listen for toolbar button clicks to toggle the popup in the active tab.
 chrome.browserAction.onClicked.addListener (tab) ->
-  chrome.tabs.sendRequest(tab.id, 'togglePopup')
+  chrome.tabs.sendMessage(tab.id, 'togglePopup')

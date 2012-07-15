@@ -6,7 +6,7 @@ class BackgroundStorage
 
   _promiseRequest: (message) ->
     d = new $.Deferred
-    chrome.extension.sendRequest(message, d.resolve)
+    chrome.extension.sendMessage(message, d.resolve)
     d.promise()
 
   getItem: (key) ->
