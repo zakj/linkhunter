@@ -177,6 +177,8 @@ class DeliciousCollection extends BookmarkCollection
   updateUrl: 'https://api.del.icio.us/v1/posts/update'
   addUrl: 'https://api.del.icio.us/v1/posts/add'
   suggestUrl: 'https://api.del.icio.us/v1/posts/suggest'
+  lastUpdateCheckKey: "bookmarks:lastUpdateCheck"
+  lastUpdateCheckInterval: 10
 
   parse: (resp) ->
     _.map resp.getElementsByTagName('post'), (post) ->
@@ -191,7 +193,14 @@ class DeliciousCollection extends BookmarkCollection
     settings = _.extend _.clone(@settings),
       success: (data) =>
         @fetch() if moment($(data).find('update').attr('time')) > @lastUpdated
-    $.ajax(@updateUrl, settings)
+    # The API call to `updateUrl` is rate limited, so we add an extra layer of
+    # limiting here.
+    now = moment()
+    bgStorage.getItem(@lastUpdateCheckKey).then (lastCheck) =>
+      lastCheck = moment(lastCheck or 0)
+      return if now.diff(lastCheck, 'seconds') < @lastUpdateCheckInterval
+      bgStorage.setItem(@lastUpdateCheckKey, now.native())
+      $.ajax(@updateUrl, settings)
 
   isAuthValid: (callback) ->
     # Only attempt the ajax call if we've set up an auth header.

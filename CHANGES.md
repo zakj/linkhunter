@@ -4,6 +4,8 @@
 
 * Updated Chrome manifest to version 2.
 * Fixed popup for Chrome's "new tab" page.
+* Rate-limited calls to the last-updated API endpoint, which otherwise was
+  being called each time the popup was opened.
 
 ## 1.2.0
 
