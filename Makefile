@@ -20,7 +20,7 @@ compiled/templates.js: compiled templates/*
 pack: default
 	'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' \
 		--pack-extension=$(shell pwd) \
-		--pack-extension-key=$$HOME/Dropbox/Linkhunter/linkhunter.pem
+		--pack-extension-key=$$HOME/Dropbox/Projects/Linkhunter/linkhunter.pem
 	
 compiled:
 	mkdir -p compiled
@@ -38,5 +38,5 @@ watch: compiled
 release: default
 	mkdir release
 	git archive master | tar -C release -xf -
-	cd release && make && zip -r ../linkhunter-$$(awk -F '"' '/version/ { print $$4 }' manifest.json).zip *
+	cd release && make && zip -r ../linkhunter-$$(awk -F '"' '/"version":/ { print $$4 }' manifest.json).zip *
 	rm -rf release
