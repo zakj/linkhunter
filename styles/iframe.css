@@ -8,6 +8,7 @@
 
 #linkhunter-iframe-container iframe {
   border: none;
+  display: block;
   width: 480px;
   height: 580px;
 
