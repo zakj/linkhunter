@@ -1,0 +1,115 @@
+.add
+  @extend .panel
+  padding-bottom: gutter * 4
+
+  form
+    padding: 0 25px
+    position: relative
+  fieldset
+    @extend .curved-wrapper
+    transition: height 200ms
+    margin-bottom: gutter
+    padding: 4px
+    width: 348px
+  input:not([type=checkbox]), .pseudo-input
+    font-size: inherit
+    font-weight: bold
+    margin-bottom: 0
+    padding-left: 6px
+  hr
+    border-style: solid
+    border-width: 1px 0
+    border-top-color: wrapper-border-color
+    border-bottom-color: highlight-color
+    margin: (gutter * 1.5) 0
+
+  // Set explicitly to avoid initial animation.
+  fieldset.title
+    height: 41px
+
+  .input-fade
+    position: relative
+    input
+      padding-right: 0
+    &:after
+      absolute: right 1px top 6px
+      background-image: linear-gradient(
+        left, rgba(255, 255, 255, 0), rgba(255, 255, 255, .95))
+      content: ""
+      display: block
+      pointer-events: none
+      size: 40px 16px
+
+  .edit-url
+    display: none
+    margin-top: (gutter / 2)
+
+  .url
+    sprite-size = 14px
+    line-height: sprite-size
+    margin-top: gutter * 1.5
+    overflow: hidden
+    .text, .icon
+      cursor: pointer
+      display: inline-block
+    .text
+      overflow: ellipsis
+      color: #bcbcbc
+      float: left
+      max-width: 310px
+      padding-left: 7px
+      text-shadow: #fff 1px 1px
+      &.hover
+        color: #999
+    .icon
+      background-image: url(../images/icons/edit.png)
+      background-position: left top
+      background-repeat: no-repeat
+      float: right
+      margin-right: 5px
+      size: sprite-size
+      &.hover
+        background-position: left (- sprite-size)
+
+  .pseudo-input
+    cursor: text
+    min-height: 29px
+    padding: 4px 4px 0 0
+    position: relative
+    .placeholder
+      absolute: left 15px top 6px
+    input
+      border: none
+      box-shadow: none
+      margin: 2px 0 4px
+      padding: 0
+      padding-left: 6px
+
+  .tags, .suggested-tags
+    display: inline
+    li
+      background: background-color
+      border-radius: 2px
+      border: 1px solid medium-border-color
+      cursor: pointer
+      display: inline-block
+      padding: 1px 5px
+  .tags li
+    font-weight: normal
+    margin-bottom: 4px
+    margin-left: 4px
+    // Emulate strike-through effect, but in a different color from the
+    // text and extending beyond the text.
+    position: relative
+    &:hover:after
+      background-color: salmon-color
+      height: 1px
+      content: ""
+      absolute: left 3px top 10px
+      right: 3px
+  .suggested-tags li
+    color: #aaa
+    margin-top: 4px
+    margin-right: 4px
+    &:hover
+      color: text-color

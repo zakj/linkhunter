@@ -1,0 +1,157 @@
+.search
+  overflow: hidden
+  header
+    box-pack: justify
+    box-align: center
+    display: box
+    input
+      display: block
+      width: 66%
+    a
+      margin-left: 1px
+      padding: 0
+      size: 27px 26px
+      text-align: center
+    img
+      margin-top: 5px
+
+  .error
+    italic-text()
+    color: salmon-color
+    cursor: pointer
+    display: none
+    margin-top: gutter
+    padding-left: gutter + 2
+    // Keep the element out of flow.
+    position: absolute
+    &:hover
+      text-decoration: line-through
+  &.show-error
+    .results
+      margin-top: gutter * 2 + 16
+    .error
+      display: block
+
+  // This wrapper is necessary to contain the scrollbar inside the curved
+  // borders.
+  .results
+    border: 1px solid border-color
+    border-radius: 5px
+    margin-top: gutter
+    overflow: hidden
+    &.empty
+      display: none
+
+  ul
+    clear: both
+    // Subtract 2 to account for the reduced height of the first and last
+    // elements.
+    max-height: item-height * visible-items - 2
+    overflow-x: hidden
+    overflow-y: auto
+
+    // Custom scrollbar.
+    &::-webkit-scrollbar
+      width: scroll-width
+    &::-webkit-scrollbar-track
+      background-color: #ddd
+    &::-webkit-scrollbar-thumb
+      background-color: #900
+
+  li
+    background-color: background-color
+    border-top: 1px solid highlight-color
+    border-bottom: 1px solid border-color
+    cursor: pointer
+    height: item-height
+    list-style: none
+    padding: item-padding
+    &:first-child
+      border-top: none
+      &:before
+        display: none
+    &:last-child
+      border-bottom: none
+    // Account for the missing top or bottom border, since we're using
+    // border-box sizing.
+    &:first-child, &:last-child
+      height: item-height - 1
+
+  .selected
+    background: highlight-color
+    border-top-color: dark-border-color
+    // Create a second top border to create the illusion of depth.
+    // position: absolute would cause it to bleed out of the radiused corners,
+    // so instead we hack the margins.
+    &:before
+      background-color: background-color
+      content: ""
+      display: block
+      margin: (- item-padding) (- item-padding) item-padding - 1px
+      size: panel-width 1px
+
+  li img
+    @extend .curved-wrapper
+    size: image-size
+    padding: ((image-size - 16 - 2) / 2)
+    // For privacy stacking order.
+    position: absolute
+
+  .img
+    float: left
+    margin-right: item-padding
+    position: relative
+    size: image-size
+  h2
+    bold-text()
+    margin: 0
+    overflow: ellipsis
+  h3, .age
+    float: left
+    margin-top: 2px
+
+  age-width = 80px
+  // Compute the url width based on what's left after fixing the age width. The
+  // extra 2px are from the .results border.
+  url-width = panel-width - item-padding * 4 - image-size - age-width - scroll-width - 2
+  h3
+    medium-text()
+    overflow: ellipsis
+    width: url-width
+  .age
+    light-text()
+    margin-left: item-padding
+    text-align: right
+    white-space: nowrap
+    width: 80px
+
+  .privacy-border
+    size = privacy-badge-size + 2
+    background-color: wrapper-border-color
+    border-radius: size
+    left: -6px
+    top: -5px
+    size: size
+  .privacy
+    background: wrapper-background-color url() no-repeat center center
+    border-radius: privacy-badge-size
+    left: -5px
+    top: -4px
+    size: privacy-badge-size
+    z-index: 1
+    &.private
+      background-image: url(../images/icons/private.png)
+    &.public
+      background-image: url(../images/icons/public.png)
+  .privacy, .privacy-border
+    opacity: 0
+    position: absolute
+    transition: opacity .1s ease-in-out, translate .1s ease-in-out
+    transform: translate(3px, 3px)
+    transform-origin: right bottom
+  .show-privacy.selected
+    .privacy, .privacy-border
+      // Delay the transition on pop-in, but not pop-out.
+      transition-delay: .3s
+      transform: translate(0)
+      opacity: 1

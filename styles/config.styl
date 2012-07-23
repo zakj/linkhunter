@@ -1,0 +1,48 @@
+.config
+  @extend .panel
+  padding-bottom: gutter * 6
+
+  form
+    width: 260px
+  #service
+    @extend .curved-wrapper
+    small-caps-text()
+    box-align: center
+    box-pack: justify
+    display: box
+    margin-bottom: gutter
+    a, .switch
+      cursor: pointer
+      display: block
+    a
+      box-flex: 1
+      color: #999
+      line-height: input-height + 8
+      text-align: center
+      transition: color .1s
+    .switch
+      background-image: url(../images/switch-bkg.png)
+      position: relative
+      size: 58px 26px
+    .knob
+      absolute: top 3px left 4px
+      background-image: url(../images/switch-knob.png)
+      size: 22px 22px
+      transition: left .1s
+    &.pinboard .knob
+      left: 33px
+    &.pinboard .pinboard, &.delicious .delicious
+      color: text-color
+
+  .made-by
+    italic-text()
+    light-text()
+    absolute: bottom gutter right gutter
+    padding-right: 20px
+    background-image: url(../images/icons/trees.png)
+    background-repeat: no-repeat
+    background-position: right top
+    padding-top: 4px
+    &:hover
+      color: salmon-color
+      background-position: right -15px

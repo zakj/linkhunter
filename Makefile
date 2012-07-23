@@ -1,16 +1,16 @@
 COFFEE=$(wildcard scripts/*.coffee)
-LESS=styles/bookmarks.less
+STYLUS=styles/linkhunter.styl
 NODE_BIN=$(shell npm bin)
 
 JS=$(addprefix compiled/,$(notdir $(COFFEE:coffee=js))) compiled/templates.js
-CSS=$(addprefix compiled/,$(notdir $(LESS:less=css)))
+CSS=$(addprefix compiled/,$(notdir $(STYLUS:styl=css)))
 DOCS=$(addprefix docs/,$(notdir $(COFFEE:coffee=html)))
 
 compiled/%.js: scripts/%.coffee compiled
 	$(NODE_BIN)/coffee --compile --bare --print $< | uglifyjs >$@
 
-compiled/%.css: styles/%.less compiled
-	$(NODE_BIN)/lessc -x $< $@
+compiled/%.css: styles/%.styl compiled
+	$(NODE_BIN)/stylus --use nib -o compiled $<
 
 default: $(JS) $(CSS)
 

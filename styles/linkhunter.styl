@@ -1,0 +1,204 @@
+@import nib;
+
+
+// Normalize  ////////////////////////////////////////////////////////////////
+
+// Sane box-sizing for life!
+*
+  box-sizing: border-box
+  reset-box-model()
+
+// I never use `href`-less `a` elements as anchors; they're always clickable.
+a { cursor: pointer; text-decoration: none }
+
+// Minimize useless/accidental mouse interactions.
+body { -webkit-user-select: none }
+img { -webkit-user-drag: none }
+
+
+// Common variables, functions, mixins, etc.  ////////////////////////////////
+
+panel-width = 400px
+gutter = 10px
+input-height = 30px
+item-height = 50px
+item-padding = 9px
+visible-items = 9
+scroll-width = 2px
+image-size = input-height
+privacy-badge-size = 15px
+
+text-color = #333
+salmon-color = #f33
+background-color = #f1f1f1
+highlight-color = #fbfbfb
+border-color = #e8e8e8
+medium-border-color = #d2d2d2
+dark-border-color = #bfbfbf
+wrapper-background-color = #e4e4e4
+wrapper-border-color = #ddd
+
+size(w, h = w)
+  width: w
+  height: h
+
+// *-text ought to be classes for use with @extend, but Stylus's @extend has
+// some bugs compared to Sass. https://github.com/LearnBoost/stylus/issues/571
+medium-text()
+  color: #666
+  font-size: 11px
+  font-weight: normal
+
+light-text()
+  medium-text()
+  color: #999
+
+bold-text()
+  color: text-color
+  font-weight: bold
+  font-size: 13px
+
+italic-text()
+  color: text-color
+  font-family: Georgia, serif
+  font-size: 14px
+  font-style: italic
+  font-weight: normal
+
+small-caps-text()
+  color: #000
+  font-family: inherit
+  font-size: 10px
+  font-weight: bold
+  text-shadow: #fff 1px 1px
+  text-transform: uppercase
+
+.curved-wrapper
+  background-color: wrapper-background-color
+  border: 1px solid wrapper-border-color
+  border-radius: 4px
+
+
+// Common styles  ////////////////////////////////////////////////////////////
+
+body
+  font-family: Helvetica Neue, sans-serif
+  font-size: 12px
+
+#panel
+  padding: gutter - 4
+  width: panel-width + @padding * 2
+
+.in-iframe #panel
+  background-color: #fff
+  border-radius: 5px
+  border: 1px solid rgba(#000, 0.4)
+  box-shadow: 0 0 5px rgba(#000, 0.4)
+  margin: 15px 15px 50px auto
+  padding: gutter
+  width: panel-width + gutter * 2 + 2
+
+input, .pseudo-input
+  background: white
+  border-radius: 5px
+  border: 1px solid border-color
+  box-shadow: inset 1px 1px 2px rgba(128, 128, 128, .1)
+  font-family: inherit
+  font-size: 16px
+  line-height: 19px
+  outline: none
+  padding: 5px gutter
+input::-webkit-input-placeholder, .pseudo-input .placeholder
+  color: #aaa
+input[type=checkbox]
+  margin-right: 5px
+
+button, .button
+  small-caps-text()
+  background: #eaeaea
+  border-radius: 4px
+  border: 1px solid dark-border-color
+  box-shadow: inset 1px 1px #fff
+  cursor: pointer
+  display: inline-block
+  height: input-height
+  padding: 0 gutter * 1.5
+  &:hover
+    background-color: #f1f1f1
+  &:active
+    background-color: #dfdfdf
+    box-shadow: inset 1px 1px #999
+
+label {
+  display: inline-block;
+  margin-bottom: gutter;
+}
+
+.panel
+  background: url(../images/texture.png)
+  border-radius: 5px
+  border: 1px solid border-color
+  overflow: hidden
+  padding-top: gutter * 2
+  position: relative
+  h1
+    text-align: center
+    img, .logo
+      display: block
+      margin: 0 auto gutter
+    .logo
+      background-image: url(../images/mark/48.png)
+      size: 48px
+      // Center the bullseye.
+      transform: translateX(4px)
+  h2
+    italic-text()
+    color: #aaa
+    margin-bottom: gutter * 3
+    text-align: center
+  h2.feedback
+    color: salmon-color
+  .close
+    absolute: top gutter right gutter
+    background-image: url(../images/icons/close.png)
+    size: 9px 10px
+    &:hover
+      background-position: 0 -10px
+  form
+    margin: 0 auto
+  input:not([type=checkbox]), .pseudo-input
+    border: 1px solid medium-border-color
+    box-shadow: inset 1px 1px 2px rgba(128, 128, 128, .2)
+    margin-bottom: gutter
+    width: 100%
+  button
+    display: block
+    margin-top: gutter
+
+  // Animations for loading.
+  h1, h2
+    transition: -webkit-transform .5s ease-in-out
+  form
+    transition-property: -webkit-transform, opacity
+    transition-duration: .5s, 250ms
+    transition-delay: 0, 250ms
+    transition-easing: ease-in-out
+  &.loading
+    h1, h2
+      transform: translateY(100px)
+    .logo
+      background-image: url(../images/loading.gif)
+    form
+      transform: translateY(500px)
+      transition-delay: 0, 0
+      opacity: 0
+  &.loading.done
+    .logo
+      background-image: url(../images/mark/48.png)
+
+
+// Individual views  /////////////////////////////////////////////////////////
+
+@import search;
+@import config;
+@import add;
