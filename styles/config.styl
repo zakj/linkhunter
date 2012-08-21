@@ -2,6 +2,9 @@
   @extend .panel
   padding-bottom: gutter * 6
 
+  h1 span
+    replace-text-retina('../images/linkhunter.png')
+
   form
     width: 260px
   #service
@@ -21,28 +24,34 @@
       text-align: center
       transition: color .1s
     .switch
-      background-image: url(../images/switch-bkg.png)
       position: relative
-      size: 58px 26px
+      replace-text-retina('../images/switch-bkg.png')
     .knob
-      absolute: top 3px left 4px
-      background-image: url(../images/switch-knob.png)
-      size: 22px 22px
+      absolute: top 4px left 4px
+      replace-text-retina('../images/switch-knob.png')
       transition: left .1s
     &.pinboard .knob
-      left: 33px
+      left: 34px
     &.pinboard .pinboard, &.delicious .delicious
       color: text-color
+  button
+    padding-right: 35px
+    position: relative
+    &:after
+      absolute: right 15px top 12px
+      content: ""
+      display: block
+      replace-text-retina('../images/icons/arrow-right.png')
 
   .made-by
     italic-text()
     light-text()
     absolute: bottom gutter right gutter
     padding-right: 20px
-    background-image: url(../images/icons/trees.png)
+    image-sized: '../images/icons/trees-default.png'
     background-repeat: no-repeat
-    background-position: right top
+    background-position: right bottom
     padding-top: 4px
     &:hover
       color: salmon-color
-      background-position: right -15px
+      image-sized: '../images/icons/trees-hover.png'

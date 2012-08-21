@@ -8,12 +8,15 @@
       display: block
       width: 66%
     a
+      background-repeat: no-repeat
+      background-position: 50% 50%
       margin-left: 1px
-      padding: 0
-      size: 27px 26px
-      text-align: center
-    img
-      margin-top: 5px
+      margin-top: 2px
+      padding: 12px
+    a[href="#add"]
+      replace-text-retina('../images/icons/add.png')
+    a[href="#config"]
+      replace-text-retina('../images/icons/config.png')
 
   .error
     italic-text()
@@ -125,6 +128,9 @@
     white-space: nowrap
     width: 80px
 
+  .privacy, .privacy-border
+    opacity: 0
+    position: absolute
   .privacy-border
     size = privacy-badge-size + 2
     background-color: wrapper-border-color
@@ -135,23 +141,19 @@
   .privacy
     background: wrapper-background-color url() no-repeat center center
     border-radius: privacy-badge-size
-    left: -5px
-    top: -4px
     size: privacy-badge-size
     z-index: 1
     &.private
-      background-image: url(../images/icons/private.png)
+      image-sized: '../images/icons/private.png'
     &.public
-      background-image: url(../images/icons/public.png)
-  .privacy, .privacy-border
-    opacity: 0
-    position: absolute
-    transition: opacity .1s ease-in-out, translate .1s ease-in-out
-    transform: translate(3px, 3px)
-    transform-origin: right bottom
+      image-sized: '../images/icons/public.png'
   .show-privacy.selected
     .privacy, .privacy-border
-      // Delay the transition on pop-in, but not pop-out.
+      // Show transition on pop-in.
       transition-delay: .3s
-      transform: translate(0)
+      transition-duration: .1s
+      transition-property: opacity, left, top
+      transition-timing-function: ease-in-out
       opacity: 1
+      left: -5px
+      top: -4px

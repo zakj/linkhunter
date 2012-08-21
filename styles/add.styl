@@ -2,6 +2,9 @@
   @extend .panel
   padding-bottom: gutter * 4
 
+  h1 span
+    replace-text-retina('../images/add-link.png')
+
   form
     padding: 0 25px
     position: relative
@@ -45,8 +48,7 @@
     margin-top: (gutter / 2)
 
   .url
-    sprite-size = 14px
-    line-height: sprite-size
+    line-height: 14px
     margin-top: gutter * 1.5
     overflow: hidden
     .text, .icon
@@ -58,18 +60,16 @@
       float: left
       max-width: 310px
       padding-left: 7px
-      text-shadow: #fff 1px 1px
+      text-shadow: #fff 0 1px
       &.hover
         color: #999
     .icon
-      background-image: url(../images/icons/edit.png)
-      background-position: left top
-      background-repeat: no-repeat
+      replace-text-retina('../images/icons/edit-default.png')
       float: right
       margin-right: 5px
-      size: sprite-size
+      margin-top: 1px
       &.hover
-        background-position: left (- sprite-size)
+        image-sized: '../images/icons/edit-hover.png'
 
   .pseudo-input
     cursor: text
@@ -81,9 +81,8 @@
     input
       border: none
       box-shadow: none
-      margin: 2px 0 4px
+      margin: 2px 0 4px 6px
       padding: 0
-      padding-left: 6px
 
   .tags, .suggested-tags
     display: inline

@@ -1,5 +1,7 @@
 # Linkhunter changelog
 
+* Added retina graphics.
+
 ## 1.2.1
 
 * Updated Chrome manifest to version 2.
