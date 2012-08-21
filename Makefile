@@ -9,10 +9,10 @@ DOCS=$(addprefix docs/,$(notdir $(COFFEE:coffee=html)))
 compiled/%.js: scripts/%.coffee compiled
 	$(NODE_BIN)/coffee --compile --bare --print $< | uglifyjs >$@
 
-compiled/%.css: styles/%.styl compiled
-	$(NODE_BIN)/stylus --use nib -o compiled $<
-
 default: $(JS) $(CSS)
+
+compiled/linkhunter.css: compiled styles/*.styl
+	$(NODE_BIN)/stylus --inline --use nib -o compiled $(STYLUS)
 
 compiled/templates.js: compiled templates/*
 	$(NODE_BIN)/handlebars -f $@ templates
