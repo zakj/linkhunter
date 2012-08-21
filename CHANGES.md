@@ -1,5 +1,7 @@
 # Linkhunter changelog
 
+## 1.2.2
+
 * Added retina graphics.
 
 ## 1.2.1
