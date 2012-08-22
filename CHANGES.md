@@ -1,5 +1,13 @@
 # Linkhunter changelog
 
+## 1.2.4
+
+* Add feedback email link to the configuration panel.
+
+## 1.2.3
+
+* Bugfixes.
+
 ## 1.2.2
 
 * Added retina graphics.

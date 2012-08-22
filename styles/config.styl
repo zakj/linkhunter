@@ -43,15 +43,22 @@
       display: block
       replace-text-retina('../images/icons/arrow-right.png')
 
-  .made-by
+  footer
     italic-text()
-    light-text()
     absolute: bottom gutter right gutter
-    padding-right: 20px
-    image-sized: '../images/icons/trees-default.png'
-    background-repeat: no-repeat
-    background-position: right bottom
-    padding-top: 4px
-    &:hover
-      color: salmon-color
-      image-sized: '../images/icons/trees-hover.png'
+    a
+      float: left
+      light-text()
+      &:hover
+        color: salmon-color
+      &:first-child
+        border-right: 1px solid dark-border-color
+        padding-right: 10px
+        margin-right: 10px
+    .made-by
+      padding-right: 20px
+      image-sized: '../images/icons/trees-default.png'
+      background-repeat: no-repeat
+      background-position: right bottom
+      &:hover
+        image-sized: '../images/icons/trees-hover.png'
