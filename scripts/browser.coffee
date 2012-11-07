@@ -4,8 +4,8 @@ class Browser
   # Class method to fetch the appropriate subclass.
   @getCurrent: ->
     browsers =
-      'chrome': Chrome
-      'safari': Safari
+      chrome: Chrome
+      safari: Safari
     for own name, cls of browsers
       if window[name]?
         $('body').addClass(name)  # allow custom styling
@@ -56,8 +56,7 @@ class Chrome extends Browser
   storage: new ChromeStorage
 
   # Return the localized string for the given message name.
-  getMessage: (name, args...) ->
-    chrome.i18n.getMessage(name, XXX)
+  getMessage: -> chrome.i18n.getMessage.apply(arguments)
 
   # Close the popup or remove the iframe.
   closePopup: ->
@@ -94,7 +93,11 @@ class Safari extends Browser
   storage: new SafariStorage
 
   getMessage: (name, args...) ->
-    "MESSAGE: #{name}"  # XXX
+    message = messages[name]
+    # Fill in placeholders where possible.
+    message.replace /\$(\d+)/g, (match, n) ->
+      n = parseInt(n, 10) - 1
+      if args[n]? then args[n] else match
 
   closePopup: ->
     @popover.hide()

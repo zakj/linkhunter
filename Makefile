@@ -1,4 +1,5 @@
 CHROME_DIR=Chrome/b
+CHROME_LOCALE=Chrome/_locales/en
 SAFARI_DIR=Linkhunter.safariextension/b
 
 # TODO: Investigate RequireJS+r.js or the like. The CS/JS build/concat process
@@ -10,16 +11,18 @@ default: chrome safari
 common: build/vendor.js build/templates.js build/common.js build/linkhunter.css linkhunter.html
 
 chrome: common
-	mkdir -p $(CHROME_DIR)
+	mkdir -p $(CHROME_DIR) $(CHROME_LOCALE)
+	./messages.py --chrome >$(CHROME_LOCALE)/messages.json
 	cp build/{vendor.js,templates.js,linkhunter.css} $(CHROME_DIR)
-	coffee --compile --print scripts/chrome/*.coffee >build/chrome.js
-	cat build/{common,chrome}.js | uglifyjs >$(CHROME_DIR)/linkhunter.js
+	coffee --compile -o $(CHROME_DIR) scripts/chrome/*.coffee
+	uglifyjs <build/common.js >$(CHROME_DIR)/linkhunter.js
 	cp linkhunter.html $(CHROME_DIR)
 
 safari: common
 	mkdir -p $(SAFARI_DIR)
 	cp build/{vendor.js,templates.js,linkhunter.css} $(SAFARI_DIR)
-	uglifyjs <build/common.js >$(SAFARI_DIR)/linkhunter.js
+	./messages.py --safari >$(SAFARI_DIR)/linkhunter.js
+	uglifyjs <build/common.js >>$(SAFARI_DIR)/linkhunter.js
 	cp linkhunter.html $(SAFARI_DIR)
 
 build:
@@ -46,7 +49,7 @@ docs:
 
 .PHONY: clean
 clean:
-	rm -rf build docs
+	rm -rf build docs $(CHROME_DIR) $(CHROME_LOCALE) $(SAFARI_DIR)
 
 
 # pack: default
