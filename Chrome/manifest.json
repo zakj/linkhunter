@@ -14,7 +14,10 @@
     "scripts": ["b/background.js"]
   },
   "browser_action": {
-    "default_icon": "browser-action.png",
+    "default_icon": {
+        "19": "browser-action.png",
+        "38": "browser-action@2x.png"
+    },
     "default_title": "Linkhunter",
     "default_popup": "b/linkhunter.html"
   },
