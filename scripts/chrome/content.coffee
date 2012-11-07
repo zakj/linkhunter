@@ -36,12 +36,12 @@ iframe =
     if not @el?
       css = document.createElement('link')
       css.rel = 'stylesheet'
-      css.href = chrome.extension.getURL('styles/iframe.css')
+      css.href = chrome.extension.getURL('iframe.css')
       document.querySelector('body').appendChild(css)
       @el = document.createElement('div')
       @el.id = @id
       frame = document.createElement('iframe')
-      frame.src = chrome.extension.getURL('popup.html')
+      frame.src = chrome.extension.getURL('b/linkhunter.html')
       @el.appendChild(frame)
     document.querySelector('body').appendChild(@el)
     closeOnClick = (event) ->

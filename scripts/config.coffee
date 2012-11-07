@@ -5,7 +5,7 @@ class Config
     'pinboard': PinboardCollection
 
   constructor: ->
-    @loaded = bgStorage.getItem('config')
+    @loaded = browser.storage.getItem('config')
     @loaded.then (config) =>
       data = if config? then JSON.parse(config) else {}
       @service = data.service or 'delicious'
@@ -21,7 +21,7 @@ class Config
       callback(valid)
 
   save: ->
-    bgStorage.setItem 'config', JSON.stringify
+    browser.storage.setItem 'config', JSON.stringify
       service: @service
       username: @username
       password: @password
@@ -30,7 +30,7 @@ class Config
 
   # Create a collection instance using the class defined by `service`.
   createCollection: ->
-    throw 'config not loaded' unless @loaded
+    throw 'config not loaded' unless @loaded.isResolved()
     new @serviceCollections[@service] [],
       username: @username
       password: @password

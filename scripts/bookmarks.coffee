@@ -1,23 +1,3 @@
-## BackgroundStorage
-
-# Expose a localStorage-like interface to the extension's background page,
-# except that `getItem` and `setItem` return `Promise` objects.
-class BackgroundStorage
-
-  _promiseRequest: (message) ->
-    d = new $.Deferred
-    chrome.extension.sendMessage(message, d.resolve)
-    d.promise()
-
-  getItem: (key) ->
-    @_promiseRequest(method: 'getItem', key: key)
-
-  setItem: (key, value) ->
-    @_promiseRequest(method: 'setItem', key: key, value: value)
-
-bgStorage = new BackgroundStorage
-
-
 ## CachedCollection
 
 # A Backbone `Collection` backed by a local cache; it also tracks the timestamp
@@ -38,14 +18,14 @@ class CachedCollection extends Backbone.Collection
     resolve = => d.resolve() unless needModels or needUpdated
     unless models.length
       needModels = true
-      bgStorage.getItem(@name).then (store) =>
+      browser.storage.getItem(@name).then (store) =>
         if store
           @models = (new @model(obj) for obj in JSON.parse(store))
         needModels = false
         resolve()
         @trigger('reset')
     @_lastUpdatedKey = "#{@name}:lastUpdated"
-    bgStorage.getItem(@_lastUpdatedKey).then (lastUpdated) =>
+    browser.storage.getItem(@_lastUpdatedKey).then (lastUpdated) =>
       @lastUpdated = moment(lastUpdated or 0)
       @lastUpdated = moment(0) if isNaN(@lastUpdated)
       needUpdated = false
@@ -57,13 +37,13 @@ class CachedCollection extends Backbone.Collection
 
   # Save the collection's models to the cache.
   _saveCache: =>
-    bgStorage.setItem(@name, JSON.stringify(@models))
+    browser.storage.setItem(@name, JSON.stringify(@models))
 
   # Save the models and a new last-updated timestamp.
   _updateCache: =>
     @_saveCache()
     @lastUpdated = moment()
-    bgStorage.setItem(@_lastUpdatedKey, @lastUpdated.native())
+    browser.storage.setItem(@_lastUpdatedKey, @lastUpdated.native())
 
 
 ## Bookmark
@@ -196,10 +176,10 @@ class DeliciousCollection extends BookmarkCollection
     # The API call to `updateUrl` is rate limited, so we add an extra layer of
     # limiting here.
     now = moment()
-    bgStorage.getItem(@lastUpdateCheckKey).then (lastCheck) =>
+    browser.storage.getItem(@lastUpdateCheckKey).then (lastCheck) =>
       lastCheck = moment(lastCheck or 0)
       return if now.diff(lastCheck, 'seconds') < @lastUpdateCheckInterval
-      bgStorage.setItem(@lastUpdateCheckKey, now.native())
+      browser.storage.setItem(@lastUpdateCheckKey, now.native())
       $.ajax(@updateUrl, settings)
 
   isAuthValid: (callback) ->

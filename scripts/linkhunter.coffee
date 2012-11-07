@@ -26,16 +26,10 @@ class BookmarkView extends Backbone.View
   click: (event) =>
     # If cmd- or ctrl-clicked, open the link in a new background tab.
     if event.metaKey or event.ctrlKey
-      chrome.extension.sendMessage(method: 'createTab', url: @model.get('url'))
-    # Otherwise, open the link in the current tab and close the popup if
-    # necessary.
+      browser.openBackgroundTab(@model.get('url'))
+    # Otherwise, open the link in the current tab.
     else
-      if app.iframed
-        top.location.href = @model.get('url')
-      else
-        chrome.tabs.getSelected null, (tab) =>
-          chrome.tabs.update(tab.id, url: @model.get('url'))
-        window.close()
+      browser.openUrl(@model.get('url'))
     return false
 
 
@@ -77,6 +71,7 @@ class BookmarksView extends Backbone.View
     _.each bookmarks, (bookmark) =>
       frag.appendChild(new BookmarkView(model: bookmark).render().el)
     @el.append(frag)
+    browser.resizePopup?()
 
   events:
     'mouseover li': 'selectHovered'
@@ -143,8 +138,8 @@ class SearchView extends Backbone.View
       0: 'sync_error_connect'
       401: 'sync_error_auth'
       429: 'sync_error_toomany'
-    error = chrome.i18n.getMessage(messages[status])
-    error or= chrome.i18n.getMessage('sync_error_default', status.toString())
+    error = browser._(messages[status])
+    error or= browser._('sync_error_default', status.toString())
     $(@el).addClass('show-error').find('.error').text(error)
 
   hideError: (event) =>
@@ -156,8 +151,11 @@ class SearchView extends Backbone.View
     if @$('input').val() is ''
       app.close()
     else
-      @$('input').val('')
-      @updateResults()
+      @clearInput()
+
+  clearInput: ->
+    @$('input').val('')
+    @updateResults()
 
   updateResults: =>
     query = @$('input').val()
@@ -171,6 +169,7 @@ class SearchView extends Backbone.View
     'blur input': 'refocus'
     'keydown': 'keydown'
     'click .error': 'hideError'
+    'click .button': 'buttonClick'
 
   # Restrict input focus to the search box.
   refocus: (event) =>
@@ -194,6 +193,12 @@ class SearchView extends Backbone.View
         return true
     return false
 
+  # For some reason, Safari popovers don't handle simple A element clicks
+  # properly.
+  buttonClick: (event) ->
+    event.preventDefault()
+    window.location.href = $(event.currentTarget).attr('href')
+
 
 ## AddView
 
@@ -211,20 +216,21 @@ class AddView extends Backbone.View
       placeholder: oldTags.find('input').attr('placeholder')
     oldTags.replaceWith(@tagsView.render().el)
     _.defer(=> @tagsView.input.focus())
-    chrome.extension.sendMessage method: 'getCurrentTab', (tab) =>
-      app.bookmarks.suggestTags? tab.url, (tags) =>
+    browser.getCurrentTabUrlAndTitle (url, title) =>
+      app.bookmarks.suggestTags? url, (tags) =>
         @tagsView.addSuggested(tag) for tag in tags
-      @$('.url .text').text(tab.url)
-      @$('[name=url]').val(tab.url)
-      @$('[name=title]').val(tab.title)
+      @$('.url .text').text(url)
+      @$('[name=url]').val(url)
+      @$('[name=title]').val(title)
       previous = app.bookmarks.find (bookmark) ->
-        bookmark.get('url') is tab.url
+        bookmark.get('url') is url
       if previous
         ago = moment(previous.get('time')).fromNow()
-        @$('h2').text(chrome.i18n.getMessage('add_already', ago))
+        @$('h2').text(browser._('add_already', ago))
         @$('[name=title]').val(previous.get('title'))
         @tagsView.val(previous.get('tags'))
         @$('[name=private]').attr('checked', previous.get('private'))
+      browser.resizePopup?()
     return this
 
   # Handle escape keypress: return to the search view.
@@ -236,6 +242,7 @@ class AddView extends Backbone.View
     'mouseover .url a': 'hoverEditUrl'
     'mouseout .url a': 'unhoverEditUrl'
     'submit': 'save'
+    'click .close': 'escape'
 
   # Reveal the edit-url input, first sliding the fieldset "open". To increase
   # the height of the fieldset without affecting the layout of the rest of the
@@ -283,7 +290,7 @@ class AddView extends Backbone.View
         else if not _.isString(data) then 'ajax'
         else if data is 'missing url' then 'url'
         else 'default'
-        feedback.text(chrome.i18n.getMessage("add_error_#{msg}"))
+        feedback.text(browser._("add_error_#{msg}"))
     return false
 
 
@@ -355,6 +362,7 @@ class TagsView extends Backbone.View
 
   removeTag: (event) =>
     $(event.currentTarget).remove()
+    browser.resizePopup?()
 
   # Handle a click on a suggested tag by adding the tag to the list. Set up a
   # click handler for the newly-added tag to restore visibility to the
@@ -366,9 +374,11 @@ class TagsView extends Backbone.View
   add: (tag) ->
     @placeholder.hide()
     $(@make('li', {}, tag)).appendTo(@tags)
+    browser.resizePopup?()
 
   addSuggested: (tag) ->
     @suggestedTags.append(@make('li', {id: _.uniqueId()}, tag))
+    browser.resizePopup?()
 
   # Emulate jQuery's `val` method; when passed a delimited list of tags, set
   # the tags list appropriate. When called with no argument, return the list of
@@ -417,6 +427,7 @@ class ConfigView extends Backbone.View
     @service = @$('#service')
     @serviceInput = @service.find('input')
     @knob = @service.find('.knob')
+    browser.resizePopup?()
     return this
 
   # Handle escape keypress: close the panel.
@@ -427,6 +438,7 @@ class ConfigView extends Backbone.View
     'click #service .switch': 'toggleService'
     'click .close': 'close'
     'submit': 'save'
+    'click footer a': 'handleLink'
 
   chooseService: (event) =>
     choice = $(event.currentTarget).attr('class')
@@ -443,6 +455,10 @@ class ConfigView extends Backbone.View
   close: ->
     if app.config.validCredentials then app.default() else app.close()
 
+  # Safari doesn't handle regular links in a popover.
+  handleLink: (event) ->
+    browser.openUrl($(event.currentTarget).attr('href'))
+
   # Save the config and update the view accordingly.
   save: (event) =>
     app.config.service = @$('[name=service]').val()
@@ -451,23 +467,22 @@ class ConfigView extends Backbone.View
     app.config.private = @$('[name=private]').is(':checked')
     app.loadCollection()
     $(@el).addClass('loading')
-    $('h2').addClass('feedback').html(
-      chrome.i18n.getMessage('config_auth_check'))
+    $('h2').addClass('feedback').html(browser._('config_auth_check'))
     app.config.checkCredentials (valid) =>
       app.config.save()
       if valid
-        $('h2').html(chrome.i18n.getMessage('config_auth_success'))
+        $('h2').html(browser._('config_auth_success'))
         success = =>
           $(@el).removeClass('loading')
           app.navigate('search', true)
         error = =>
           $(@el).removeClass('loading')
-          $('h2').html(chrome.i18n.getMessage('sync_error_connect'))
+          $('h2').html(browser._('sync_error_connect'))
         app.bookmarks.fetch(success: success, error: error)
       else
         service = app.config.service
         service = service.charAt(0).toUpperCase() + service.substring(1)
-        $('h2').text(chrome.i18n.getMessage('config_auth_fail', service))
+        $('h2').text(browser._('config_auth_fail', service))
         $(@el).removeClass('loading')
     return false
 
@@ -479,8 +494,6 @@ class Linkhunter extends Backbone.Router
   # Build a collection, populate it from the local cache, and fire off a
   # request for updates in the background.
   initialize: ->
-    @iframed = window isnt top
-    $('body').addClass('in-iframe') if @iframed
     @config = new Config
     @config.loaded.then =>
       @loadCollection().loaded.then =>
@@ -510,11 +523,8 @@ class Linkhunter extends Backbone.Router
       @currentView.escape()
       return false
 
-  close: =>
-    if @iframed
-      chrome.extension.sendMessage(method: 'closePopup')
-    else
-      window.close()
+  close: ->
+    browser.closePopup()
 
   routes:
     '': 'default'
@@ -540,4 +550,5 @@ class Linkhunter extends Backbone.Router
 
 
 
-app = new Linkhunter
+this.browser = Browser.getCurrent()
+this.app = new Linkhunter
