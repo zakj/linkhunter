@@ -1,8 +1,12 @@
 # Linkhunter changelog
 
-## 1.2.4
+## 1.3
 
+* First release of the Safari extension!
+* Add retina browser-action icon.
 * Add feedback email link to the configuration panel.
+* Allow updating previously-saved links in Delicious again (this was failing
+  due to an undocumented API change).
 
 ## 1.2.3
 
