@@ -18,6 +18,8 @@
 	<string>1.2.3</string>
 	<key>Chrome</key>
 	<dict>
+		<key>Global Page</key>
+		<string>global.html</string>
 		<key>Popovers</key>
 		<array>
 			<dict>
@@ -48,7 +50,12 @@
 	<key>Content</key>
 	<dict>
 		<key>Scripts</key>
-		<dict/>
+		<dict>
+			<key>Start</key>
+			<array>
+				<string>b/injected.js</string>
+			</array>
+		</dict>
 	</dict>
 	<key>Description</key>
 	<string>Find your links on Delicious or Pinboard.</string>

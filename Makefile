@@ -21,6 +21,7 @@ chrome: common
 safari: common
 	mkdir -p $(SAFARI_DIR)
 	cp build/{vendor.js,templates.js,linkhunter.css} $(SAFARI_DIR)
+	coffee --compile -o $(SAFARI_DIR) scripts/safari/*.coffee
 	./messages.py --safari >$(SAFARI_DIR)/linkhunter.js
 	uglifyjs <build/common.js >>$(SAFARI_DIR)/linkhunter.js
 	cp linkhunter.html $(SAFARI_DIR)
