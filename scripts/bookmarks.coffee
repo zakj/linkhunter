@@ -199,6 +199,7 @@ class DeliciousCollection extends BookmarkCollection
     data = model.toJSON()
     data.description = data.title
     data.shared = 'no' if data.private
+    data.replace = 'yes'
     settings = _.extend _.clone(@settings),
       data: data
       success: (data) =>
