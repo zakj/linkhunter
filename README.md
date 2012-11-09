@@ -1,9 +1,9 @@
 Linkhunter
 ==========
 
-A [Google Chrome][] and [Safari][] extension helping you quickly search your [Delicious][] or
-[Pinboard][] bookmarks. See the [issues][] page for known bugs and
-planned enhancements.
+A [Google Chrome][] and [Safari][] extension helping you quickly search your
+[Delicious][] or [Pinboard][] bookmarks. See the [issues][] page for known bugs
+and planned enhancements.
 
 
 Acknowledgements
