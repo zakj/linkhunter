@@ -1,7 +1,7 @@
 Linkhunter
 ==========
 
-A [Google Chrome][] extension helping you quickly search your [Delicious][] or
+A [Google Chrome][] and [Safari][] extension helping you quickly search your [Delicious][] or
 [Pinboard][] bookmarks. See the [issues][] page for known bugs and
 planned enhancements.
 
@@ -17,8 +17,9 @@ technology:
 * [Backbone.js][]
 * [Underscore.js][]
 * [Moment.js][]
+* [Handlebars][]
 * [jQuery][]
-* [LESS][]
+* [Stylus][]
 
 
 License
@@ -47,6 +48,7 @@ SOFTWARE.
 
 [Cabin]: http://madebycabin.com/
 [Google Chrome]: http://www.google.com/chrome
+[Safari]: http://www.apple.com/safari/
 [Delicious]: http://www.delicious.com/
 [Pinboard]: http://pinboard.in/
 [issues]: https://github.com/cabin/linkhunter/issues
@@ -56,4 +58,5 @@ SOFTWARE.
 [Underscore.js]: http://documentcloud.github.com/underscore/
 [Moment.js]: http://momentjs.com/
 [jQuery]: http://jquery.com/
-[LESS]: http://lesscss.org/
+[Stylus]: http://learnboost.github.com/stylus/
+[Handlebars]: http://handlebarsjs.com
