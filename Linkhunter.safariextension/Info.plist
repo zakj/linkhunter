@@ -72,7 +72,7 @@
 		</dict>
 	</dict>
 	<key>Update Manifest URL</key>
-	<string>https://raw.github.com/cabin/linkhunter/Linkhunter.safariextension/updates.plist</string>
+        <string>https://raw.github.com/cabin/linkhunter/master/Linkhunter.safariextension/updates.plist</string>
 	<key>Website</key>
 	<string>http://madebycabin.com/</string>
 </dict>
