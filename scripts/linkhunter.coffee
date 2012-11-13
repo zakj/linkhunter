@@ -5,7 +5,7 @@ moment.relativeTime.s = 'moments'
 ## BookmarkView
 
 # Display a single bookmark as a clickable element.
-class BookmarkView extends Backbone.View
+class BookmarkView extends CompositeView
   tagName: 'li'
   template: Handlebars.templates.bookmark
 
@@ -36,7 +36,7 @@ class BookmarkView extends Backbone.View
 ## BookmarksView
 
 # Display a list of bookmarks and track the currently-selected one.
-class BookmarksView extends Backbone.View
+class BookmarksView extends CompositeView
 
   initialize: ->
     @container = @el.parent('.results')
@@ -69,7 +69,7 @@ class BookmarksView extends Backbone.View
     bookmarks = [bookmarks] unless _.isArray(bookmarks)
     frag = document.createDocumentFragment()
     _.each bookmarks, (bookmark) =>
-      frag.appendChild(new BookmarkView(model: bookmark).render().el)
+      frag.appendChild(@renderChild(new BookmarkView(model: bookmark)))
     @el.append(frag)
     browser.resizePopup?()
 
@@ -117,19 +117,19 @@ class BookmarksView extends Backbone.View
 
 # The main application view. Handles the search input box and displays results
 # using a BookmarksView.
-class SearchView extends Backbone.View
+class SearchView extends CompositeView
   tagName: 'form'
   className: 'search'
   template: Handlebars.templates.search
 
   initialize: (options) ->
     @bookmarks = options.bookmarks
-    @bookmarks.bind('reset', @updateResults)
-    @bookmarks.bind('syncError', @showError)
+    @bindTo(@bookmarks, 'reset', @updateResults)
+    @bindTo(@bookmarks, 'syncError', @showError)
 
   render: =>
     $(@el).html(@template())
-    @resultsView = new BookmarksView(el: @$('ul'))
+    @resultsView = @addChild(new BookmarksView(el: @$('ul')))
     @updateResults()
     return this
 
@@ -203,7 +203,7 @@ class SearchView extends Backbone.View
 ## AddView
 
 # Add a new bookmark.
-class AddView extends Backbone.View
+class AddView extends CompositeView
   tagName: 'div'
   className: 'add'
   template: Handlebars.templates.add
@@ -214,7 +214,7 @@ class AddView extends Backbone.View
     @tagsView = new TagsView
       name: 'tags'
       placeholder: oldTags.find('input').attr('placeholder')
-    oldTags.replaceWith(@tagsView.render().el)
+    oldTags.replaceWith(@renderChild(@tagsView))
     _.defer(=> @tagsView.input.focus())
     browser.getCurrentTabUrlAndTitle (url, title) =>
       app.bookmarks.suggestTags? url, (tags) =>
@@ -297,7 +297,7 @@ class AddView extends Backbone.View
 ## TagsView
 
 # Handle adding/removing tags and displaying suggested tags.
-class TagsView extends Backbone.View
+class TagsView extends CompositeView
   tagName: 'fieldset'
   template: Handlebars.templates.tags
 
@@ -417,7 +417,7 @@ class TagsView extends Backbone.View
 ## ConfigView
 
 # The config panel.
-class ConfigView extends Backbone.View
+class ConfigView extends CompositeView
   tagName: 'div'
   className: 'config'
   template: Handlebars.templates.config
@@ -489,7 +489,8 @@ class ConfigView extends Backbone.View
 
 ## Main application router
 
-class Linkhunter extends Backbone.Router
+class Linkhunter extends ElementRouter
+  el: $('#panel')
 
   # Build a collection, populate it from the local cache, and fire off a
   # request for updates in the background.
@@ -500,21 +501,14 @@ class Linkhunter extends Backbone.Router
         if @config.validCredentials
           @bookmarks?.fetchIfStale()
       Backbone.history.start()
-    @panel = $('#panel')
     $(window).on('keydown', @handleEscapeKey)
     # When clicking outside of the panel, close the app (this saves trying to
     # resize the iframe to match the app size).
-    $('#panel').on('click', (event) -> event.stopPropagation())
+    $(@el).on('click', (event) -> event.stopPropagation())
     $(window).on('click', @close)
 
   loadCollection: ->
     @bookmarks = @config.createCollection()
-
-  # Render `view` and make it visible, removing any previous view.
-  show: (view) ->
-    @currentView?.remove()
-    @currentView = view
-    @panel.html(view.render().el)
 
   # Escape keypresses must be caught on the window, rather than on a given
   # element. Do so here, handing off to the current view.

@@ -39,7 +39,7 @@ build/templates.js: build templates/*
 
 build/common.js: build scripts/*.coffee
 	coffee --compile --join $@ \
-		scripts/{bookmarks,browser,config,linkhunter}.coffee
+		scripts/{support,bookmarks,browser,config,linkhunter}.coffee
 
 build/linkhunter.css: build styles/*.styl
 	stylus --compress --inline --use nib -o build styles/linkhunter.styl
