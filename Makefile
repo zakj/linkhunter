@@ -52,11 +52,10 @@ docs:
 clean:
 	rm -rf build docs $(CHROME_DIR) $(CHROME_LOCALE) $(SAFARI_DIR)
 
-
-# pack: default
-# 	'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' \
-# 		--pack-extension=$(shell pwd) \
-# 		--pack-extension-key=$$HOME/Dropbox/Projects/Linkhunter/linkhunter.pem
+pack-chrome: chrome
+	'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' \
+		--pack-extension=$(shell pwd)/Chrome \
+		--pack-extension-key=$$HOME/Dropbox/Projects/Linkhunter/linkhunter.pem
 
 # release: default
 # 	mkdir release
