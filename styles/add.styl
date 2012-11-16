@@ -70,6 +70,18 @@
       &.hover
         image-sized: '../images/icons/edit-hover.png'
 
+  .autocomplete
+    display: inline-block
+    input
+      background: transparent
+      position: relative
+    .behind
+      color: silver
+      position: absolute
+      // Makes the background text a little bit less heavy, which helps
+      // to avoid spilling around the edges of the foreground text.
+      -webkit-font-smoothing: antialiased
+
   .pseudo-input
     cursor: text
     min-height: 29px

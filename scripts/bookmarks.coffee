@@ -145,6 +145,18 @@ class BookmarkCollection extends CachedCollection
       return results.length >= @maxResults
     return results
 
+  # Tags are stored as a simple string on each bookmark. Split each
+  # bookmark's tag list (if any) into its component tags, and flatten the
+  # result into a single list. Then count uses of each tag, and return a list
+  # of unique tags in descending order of usage.
+  uniqueTags: ->
+    _.chain(@pluck('tags'))
+      .without('')
+      .map((tags) -> tags.split(' ')).flatten()  # TODO delimiter
+      .countBy((t) -> t)
+      .pairs().sortBy((pair) -> pair[1]).pluck(0)
+      .reverse().value()
+
 
 ## DeliciousCollection
 

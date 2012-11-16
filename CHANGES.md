@@ -3,6 +3,9 @@
 ## 1.3
 
 * First release of the Safari extension!
+* Add tag autocompletion in the "Add Bookmark" screen. After entering some
+  text, your most-used tag that matches will be shown in grey; press tab or the
+  right-arrow key to select it.
 * Add retina browser-action icon.
 * Add feedback email link to the configuration panel.
 * Allow updating previously-saved links in Delicious again (this was failing

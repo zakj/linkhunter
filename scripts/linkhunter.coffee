@@ -307,10 +307,14 @@ class TagsView extends CompositeView
       value: options.value
       placeholder: options.placeholder
     @delimiter = options.delimiter or ' '
+    @allTags = _([])
+    app.bookmarks.loaded.then =>
+      @allTags = _(app.bookmarks.uniqueTags())
 
   render: ->
     $(@el).html(@template(@templateData))
-    @input = @$('input')
+    @input = @$('input[name]')
+    @autocomplete = @$('.autocomplete input:first-child')
     @tags = @$('ul.tags')
     @placeholder = @$('.placeholder')
     @suggestedTags = @$('ul.suggested-tags')
@@ -322,6 +326,7 @@ class TagsView extends CompositeView
     'keydown input': 'handleKeyDown'
     'keypress input': 'handleKeyPress'
     'blur input': 'extractTag'
+    'input input[name]': 'updateAutocomplete'
     'click .tags li': 'removeTag'
     'click .suggested-tags li': 'addFromSuggested'
 
@@ -338,6 +343,12 @@ class TagsView extends CompositeView
     # extracted.
     if event.keyCode is 13
       @extractTag()
+    # If a user presses tab or right-arrow and we have an autocompleted option,
+    # select it.
+    if event.keyCode in [9, 39] and @autocomplete.val() isnt ''
+      @input.val(@autocomplete.val())
+      @extractTag()
+      return false
     # Defer resizing the input until its value has been updated for this
     # keypress. Calling fitInputToContents in a keyup handler makes more sense,
     # but this method reduces visual lag.
@@ -350,6 +361,16 @@ class TagsView extends CompositeView
       @extractTag(@input.get(0).selectionStart)
       return false
 
+  updateAutocomplete: ->
+    completeText = ''
+    val = @input.val()
+    if val
+      startsWith = (str, starts) ->
+        str.length >= starts.length and str.slice(0, starts.length) is starts
+      matches = @allTags.filter((tag) -> startsWith(tag, val))
+      completeText = matches[0]
+    @autocomplete.val(completeText)
+
   # Extract `length` characters from the beginning of the input box into a new
   # tag object. If `length` is not given, extract the entire input.
   extractTag: (length) =>
@@ -358,6 +379,7 @@ class TagsView extends CompositeView
     if tag
       remainder = @input.val().slice(length).trim()
       @input.val(remainder)
+      @updateAutocomplete()
       @add(tag)
 
   removeTag: (event) =>
@@ -403,14 +425,17 @@ class TagsView extends CompositeView
   fitInputToContents: =>
     padding = 30
     @placeholder.hide() unless @input.val() is ''
-    fake = $('<div/>').addClass('pseudo-input').css
+    fake = $('<div/>').addClass('pseudo-input').appendTo(@el).css
       position: 'absolute'
       left: -9999
       top: -9999
       whiteSpace: 'nowrap'
       width: 'auto'
-    fake.text(@input.val()).appendTo(@el)
-    @input.css(width: Math.min(fake.width() + padding, $(@el).width()))
+    inputWidth = fake.text(@input.val()).width() + padding
+    autocompleteWidth = fake.text(@autocomplete.val()).width() + 5
+    fakeWidth = Math.max(inputWidth, autocompleteWidth)
+    @input.add(@autocomplete).css
+      width: Math.min(fakeWidth, $(@el).width())
     fake.remove()
 
 
