@@ -449,6 +449,7 @@ class ConfigView extends CompositeView
 
   render: ->
     $(@el).html(@template(app.config))
+    _.defer(=> @$('[name=username]').focus()) unless app.config.username
     @service = @$('#service')
     @serviceInput = @service.find('input')
     @knob = @service.find('.knob')
