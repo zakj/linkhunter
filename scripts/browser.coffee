@@ -56,7 +56,7 @@ class Chrome extends Browser
   storage: new ChromeStorage
 
   # Return the localized string for the given message name.
-  getMessage: -> chrome.i18n.getMessage.apply(arguments)
+  getMessage: -> chrome.i18n.getMessage.apply(null, arguments)
 
   # Close the popup or remove the iframe.
   closePopup: ->
