@@ -15,6 +15,10 @@
   -webkit-animation-name: popIn;
   -webkit-animation-duration: 0.25s;
   -webkit-animation-timing-function: ease-out;
+
+  /* Override all-iframe styles on some sites. */
+  box-shadow: none;
+  -webkit-box-shadow: none;
 }
 
 @-webkit-keyframes popIn {
