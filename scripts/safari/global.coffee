@@ -1,4 +1,6 @@
 handleMessage = (event) ->
   if event.name is 'showPopover'
-    safari.extension.toolbarItems[0].showPopover()
+    for toolbarItem in safari.extension.toolbarItems
+      if toolbarItem.browserWindow is event.target.browserWindow
+        toolbarItem.showPopover()
 safari.application.addEventListener('message', handleMessage, false)
