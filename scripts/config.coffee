@@ -34,3 +34,7 @@ class Config
     new @serviceCollections[@service] [],
       username: @username
       password: @password
+
+  # Return a capitalized version of the service string, for display.
+  serviceName: ->
+    @service.charAt(0).toUpperCase() + @service.substring(1)

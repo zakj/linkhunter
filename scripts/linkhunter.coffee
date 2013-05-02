@@ -506,9 +506,7 @@ class ConfigView extends CompositeView
           $('h2').html(browser._('sync_error_connect'))
         app.bookmarks.fetch(success: success, error: error)
       else
-        service = app.config.service
-        service = service.charAt(0).toUpperCase() + service.substring(1)
-        $('h2').text(browser._('config_auth_fail', service))
+        $('h2').text(browser._('config_auth_fail', app.config.serviceName()))
         $(@el).removeClass('loading')
     return false
 
