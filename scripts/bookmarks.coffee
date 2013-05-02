@@ -214,6 +214,7 @@ class DeliciousCollection extends BookmarkCollection
     data.replace = 'yes'
     settings = _.extend _.clone(@settings),
       data: data
+      complete: options.complete
       success: (data) =>
         result = data.getElementsByTagName('result')[0].getAttribute('code')
         if result is 'done'

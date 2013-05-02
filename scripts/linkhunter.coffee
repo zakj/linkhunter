@@ -279,7 +279,12 @@ class AddView extends CompositeView
       tags: @tagsView.val()
       private: @$('[name=private]').is(':checked')
     $(@el).addClass('loading')
+    # If the API server is slow to respond, let the user know what's going on.
+    slowResponse = ->
+      feedback.text(browser._('add_slow', app.config.serviceName()))
+    slowResponseTimeout = setTimeout(slowResponse, 1500)
     app.bookmarks.create model,
+      complete: -> clearTimeout(slowResponseTimeout)
       success: =>
         $(@el).addClass('done')
         feedback.text('Bravo!')
