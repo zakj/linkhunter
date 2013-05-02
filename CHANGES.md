@@ -1,5 +1,10 @@
 # Linkhunter changelog
 
+## 1.3.2
+
+* Add notification message when adding a link takes too long due to a slow API.
+* Clicking to remove a suggested tag now places it back in the suggestion box.
+
 ## 1.3
 
 * Add tag autocompletion in the "Add Bookmark" screen. After entering some

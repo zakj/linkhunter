@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Cabin</string>
 	<key>Builder Version</key>
-	<string>8536.26.17</string>
+	<string>8536.29.13</string>
 	<key>CFBundleDisplayName</key>
 	<string>Linkhunter</string>
 	<key>CFBundleIdentifier</key>
@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.3</string>
+	<string>1.3.2</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Global Page</key>
@@ -72,7 +72,7 @@
 		</dict>
 	</dict>
 	<key>Update Manifest URL</key>
-        <string>https://raw.github.com/cabin/linkhunter/master/Linkhunter.safariextension/updates.plist</string>
+	<string>https://s3-us-west-2.amazonaws.com/linkhunter.madebycabin.com/updates.plist</string>
 	<key>Website</key>
 	<string>http://madebycabin.com/</string>
 </dict>
