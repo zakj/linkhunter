@@ -400,8 +400,9 @@ class TagsView extends CompositeView
 
   add: (tag) ->
     @placeholder.hide()
-    $(@make('li', {}, tag)).appendTo(@tags)
+    el = $(@make('li', {}, tag)).appendTo(@tags)
     browser.resizePopup?()
+    el
 
   addSuggested: (tag) ->
     @suggestedTags.append(@make('li', {id: _.uniqueId()}, tag))
