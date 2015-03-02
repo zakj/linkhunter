@@ -1,5 +1,9 @@
 # Linkhunter changelog
 
+## 1.3.3
+
+* Fetch up to 10,000 links from Delicious (previously 1,000).
+
 ## 1.3.2
 
 * Add notification message when adding a link takes too long due to a slow API.
