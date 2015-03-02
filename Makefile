@@ -31,7 +31,7 @@ build:
 
 # Order is important; some of these depend on others.
 build/vendor.js: build vendor/*.js
-	cat vendor/{jquery-1.7,underscore,backbone,handlebars.runtime,moment}[.-]min.js \
+	cat vendor/{jquery-1.7.min.js,underscore-min.js,backbone-min.js,handlebars.runtime-v3.0.0.js,moment.min.js} \
 		| uglifyjs >$@
 
 build/templates.js: build templates/*
