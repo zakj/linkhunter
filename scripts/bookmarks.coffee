@@ -163,7 +163,7 @@ class BookmarkCollection extends CachedCollection
 # <http://www.delicious.com/help/api>
 class DeliciousCollection extends BookmarkCollection
   idAttribute: 'hash'
-  url: 'https://api.del.icio.us/v1/posts/all'
+  url: 'https://api.del.icio.us/v1/posts/all?results=10000'
   ajaxOptions:
     dataType: 'xml'
   updateUrl: 'https://api.del.icio.us/v1/posts/update'
