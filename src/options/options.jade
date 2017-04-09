@@ -1,0 +1,18 @@
+div
+  if token
+    div Logged in to Pinboard as #{$helpers.username()}.
+    button(on={click: $helpers.logOut}) Log out
+  else
+    div Not logged in
+    button(on={click: $helpers.logIn}) Log in
+
+
+// <p>Logged in as ...</p>
+
+// <label>
+//   <input type="checkbox" name="private">
+//   Mark new links private by default
+// </label>
+
+// <!-- TODO: make this change the active tab? doesn't work as is -->
+// <a href="chrome://extensions/configureCommands">Change keyboard shortcut</a>

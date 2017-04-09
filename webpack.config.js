@@ -11,7 +11,9 @@ module.exports = (env={}) => ({
   context: srcDir,
 
   entry: {
+    vendor: ['panel'],
     events: './events',
+    options: './options',
     popup: './popup',
     'find-api-token': './find-api-token',
   },
@@ -33,6 +35,15 @@ module.exports = (env={}) => ({
         },
       },
       {
+        test: /\.jade$/,
+        include: srcDir,
+        loader: 'virtual-jade-loader',
+        options: {
+          vdom: 'snabbdom',
+          runtime: 'var h = require("panel").h;',
+        },
+      },
+      {
         // Disable ejs for HtmlWebpackPlugin to speed up builds.
         test: /\.html/,
         include: srcDir,
@@ -51,16 +62,20 @@ module.exports = (env={}) => ({
       from: 'manifest.json',
     }]),
     new HtmlWebpackPlugin({
-      chunks: ['popup'],
+      chunks: ['vendor', 'popup'],
+      template: 'popup/index.html',
       filename: 'popup.html',
-      template: 'popup.html',
       title: 'Linkhunter',
     }),
     new HtmlWebpackPlugin({
-      chunks: [],
+      chunks: ['vendor', 'options'],
+      template: 'options/index.html',
       filename: 'options.html',
-      template: 'options.html',
       title: 'Linkhunter options',
+    }),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor',
+      chunks: ['options', 'popup'],
     }),
   ].concat(env.production ? [new UglifyJsWebpackPlugin()] : []),
 

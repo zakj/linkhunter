@@ -1,0 +1,13 @@
+div
+  input(attrs={type: 'search'} on={
+    input: $helpers.handleSearchInput,
+    keydown: $helpers.handleKeyDown,
+    blur: $helpers.refocus,
+  })
+  button(on={click: $helpers.handleOptionsClick}) Options
+  ul
+    each bookmark in $helpers.filteredBookmarks()
+      li
+        a(on={click: (ev, el) => $helpers.handleBookmarkClick(ev, bookmark.href)})
+          img(attrs={src: $helpers.iconFor(bookmark.href), width: 16, height: 16})
+          span= bookmark.description
