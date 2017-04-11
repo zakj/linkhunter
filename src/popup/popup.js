@@ -2,9 +2,35 @@ import { Component } from 'panel';
 
 import { sendMessage } from '../browser';
 import template from './popup.jade';
+import './popup.styl';
 
 // Used for parsing URLs in iconFor.
 const linkEl = document.createElement('a');
+
+
+// Words in the query string are separated by whitespace and/or commas. Every
+// word in the query must match in a bookmark's tags or description.
+function filterBookmarks(query, bookmarks) {
+  if (!query) return bookmarks;
+  const regexps = query.split(/[, ]+/).map(word => new RegExp(word, 'i'));
+  // TODO optimize for displaying only visible results
+  return bookmarks.filter(b => {
+    const s = [b.tags, b.description].join(' ');
+    return regexps.every(re => re.test(s));
+  });
+}
+
+
+// TODO extract into browser.js
+function openUrl({url, background=false}) {
+  if (background) {
+    chrome.tabs.create({url, active: false});
+  }
+  else {
+    chrome.tabs.update({url});
+    window.close();
+  }
+}
 
 
 document.registerElement('lh-popup', class extends Component {
@@ -13,42 +39,38 @@ document.registerElement('lh-popup', class extends Component {
       defaultState: {
         bookmarks: [],
         filterString: '',
+        selectedIndex: 0,
       },
 
       helpers: {
         filteredBookmarks: () => {
-          const query = this.state.filterString;
-          if (!query) return this.state.bookmarks;
-          // Words in the query string are separated by whitespace and/or
-          // commas. Each words must match a bookmark's tags or description.
-          const regexps = query.split(/[, ]+/).map(word => new RegExp(word, 'i'));
-          // TODO optimize for displaying only visible results
-          return this.state.bookmarks.filter(b => {
-            const s = [b.tags, b.description].join(' ');
-            return regexps.every(re => re.test(s));
-          });
+          return filterBookmarks(this.state.filterString, this.state.bookmarks);
         },
 
         handleBookmarkClick: (ev, url) => {
-          // TODO: openUrl({url, background: ev.metaKey || ev.ctrlKey});
-          if (ev.metaKey || ev.ctrlKey) {
-            chrome.tabs.create({url, active: false});
-          }
-          else {
-            chrome.tabs.update({url});
-            window.close();
-          }
+          openUrl({url, background: ev.metaKey || ev.ctrlKey});
         },
 
         handleKeyDown: ev => {
-          if (ev.key === 'Escape' && !this.state.filterString) {
-            window.close();
-          }
-          else if (ev.key === 'Enter') {
-            // TODO
-            // url = filteredBookmarks[selectedIndex]
-            // openUrl({url, background: ev.metaKey || ev.ctrlKey});
-          }
+          const handler = {
+            Escape: () => !this.state.filterString && window.close(),
+            Enter: () => {
+              const url = this.helpers.filteredBookmarks()[this.state.selectedIndex].href;
+              openUrl({url, background: ev.metaKey || ev.ctrlKey});
+            },
+            ArrowDown: () => {
+              this.update({
+                selectedIndex: Math.min(
+                  this.helpers.filteredBookmarks().length - 1,
+                  this.state.selectedIndex + 1
+                ),
+              });
+            },
+            ArrowUp: () => {
+              this.update({selectedIndex: Math.max(0, this.state.selectedIndex - 1)});
+            },
+          }[ev.key];
+          handler && handler();
         },
 
         handleOptionsClick: () => {

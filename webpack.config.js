@@ -3,6 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const UglifyJsWebpackPlugin = require('uglifyjs-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
+const autoprefixer = require('autoprefixer');
 
 const srcDir = path.resolve(__dirname, 'src');
 const distDir = path.resolve(__dirname, 'dist');
@@ -44,6 +45,18 @@ module.exports = (env={}) => ({
         },
       },
       {
+        test: /\.styl/,
+        loader: [
+          'style-loader',
+          'css-loader',
+          {
+            loader: 'postcss-loader',
+            options: {plugins: () => [autoprefixer]},
+          },
+          'stylus-loader',
+        ],
+      },
+      {
         // Disable ejs for HtmlWebpackPlugin to speed up builds.
         test: /\.html/,
         include: srcDir,
@@ -56,6 +69,10 @@ module.exports = (env={}) => ({
     new webpack.DefinePlugin({
       MIXPANEL_TOKEN: '6cc73b1df12b2e1ba0892da5da2a7216',
       DEBUG: !env.production,
+    }),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor',
+      chunks: ['options', 'popup'],
     }),
     new CopyWebpackPlugin([{
       context: __dirname,
@@ -72,10 +89,6 @@ module.exports = (env={}) => ({
       template: 'options/index.html',
       filename: 'options.html',
       title: 'Linkhunter options',
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      chunks: ['options', 'popup'],
     }),
   ].concat(env.production ? [new UglifyJsWebpackPlugin()] : []),
 
