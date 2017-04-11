@@ -1,3 +1,13 @@
+export function openUrl({url, background=false}) {
+  if (background) {
+    chrome.tabs.create({url, active: false});
+  }
+  else {
+    chrome.tabs.update({url});
+    window.close();
+  }
+}
+
 export function sendMessage(msg) {
   return new Promise(resolve => chrome.runtime.sendMessage(msg, resolve));
 };

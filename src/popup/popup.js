@@ -1,6 +1,6 @@
 import { Component } from 'panel';
 
-import { sendMessage } from '../browser';
+import { openUrl, sendMessage } from '../browser';
 import template from './popup.jade';
 import './popup.styl';
 
@@ -18,18 +18,6 @@ function filterBookmarks(query, bookmarks) {
     const s = [b.tags, b.description].join(' ');
     return regexps.every(re => re.test(s));
   });
-}
-
-
-// TODO extract into browser.js
-function openUrl({url, background=false}) {
-  if (background) {
-    chrome.tabs.create({url, active: false});
-  }
-  else {
-    chrome.tabs.update({url});
-    window.close();
-  }
 }
 
 
