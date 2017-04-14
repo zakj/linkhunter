@@ -41,7 +41,15 @@ document.registerElement('lh-popup', class extends Component {
 
         handleKeyDown: ev => {
           const handler = {
-            Escape: () => !this.state.filterString && window.close(),
+            Escape: () => {
+              ev.preventDefault();
+              if (this.state.filterString) {
+                this.update({filterString: ''});
+              }
+              else {
+                window.close();
+              }
+            },
             Enter: () => {
               const url = this.helpers.filteredBookmarks()[this.state.selectedIndex].href;
               openUrl({url, background: ev.metaKey || ev.ctrlKey});
@@ -75,7 +83,12 @@ document.registerElement('lh-popup', class extends Component {
           return `https://icons.duckduckgo.com/ip2/${linkEl.host}.ico`;
         },
 
-        refocus: ev => ev.target.focus(),
+        // TODO this is horrible. catch events on document?
+        refocus: ev => setTimeout(() => ev.target.focus(), 100),
+
+        setSelectedIndex: i => {
+          this.update({selectedIndex: i});
+        },
       },
 
       template,

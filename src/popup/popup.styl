@@ -1,5 +1,30 @@
+.filter:focus
+  outline none
+
 .bookmarks
   list-style none
+  padding 0
 
-.bookmark.selected
-  list-style disc
+.bookmark a
+  align-items center
+  cursor pointer
+  display flex
+  padding 5px 0
+
+  img
+    padding = 2px
+    size = 16px + (2 * padding)
+
+    height size
+    margin-left 5px
+    padding padding
+    width size
+
+  .description
+    flex 1
+    margin-left 10px
+
+.bookmark.selected a
+  background #fafafa
+  img
+    box-shadow 0 1px 3px #ddd
