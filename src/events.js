@@ -1,14 +1,22 @@
+import flattenDeep from 'lodash/fp/flattenDeep';
+import uniq from 'lodash/fp/uniq';
+
 import { storage } from './browser';
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const handler = {
     checkLoggedIn: () => checkLoggedIn().then(sendResponse),  // TODO unused
-    updateToken: authenticate,
-    setToken: () => storage.set({token: request.token}),
-    showOptions: () => chrome.runtime.openOptionsPage(),
-    updateBookmarks,
+    updateToken: () => authenticate().then(sendResponse),
+    setToken: () => storage.set({token: request.token}).then(sendResponse),
+    showOptions: () => chrome.runtime.openOptionsPage(sendResponse),
+    suggestTags: () => suggestTags(request.url).then(sendResponse),
+    updateBookmarks: () => updateBookmarks().then(sendResponse),
   }[request.type];
-  handler ? handler() : console.warn('unknown message', request);
+  if (handler) {
+    handler();
+    return true;  // wait for sendResponse
+  }
+  console.warn('unknown message', request);
 });
 
 // TODO: on upgrade, check for existing delicious bookmarks in localstorage.
@@ -18,8 +26,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // https://pinboard.in/api
 const PINBOARD = {
-  password: 'https://pinboard.in/settings/password',
   all: 'https://api.pinboard.in/v1/posts/all',
+  password: 'https://pinboard.in/settings/password',
+  suggest: 'https://api.pinboard.in/v1/posts/suggest',
   update: 'https://api.pinboard.in/v1/posts/update',
 };
 
@@ -42,12 +51,12 @@ function query(url, params) {
 }
 
 function queryString(obj) {
-  return Object.entries(obj).map(([k, v]) => `${k}=${v}`).join('&');
+  return Object.entries(obj).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
 }
 
 function updateBookmarks() {
   // TODO throttle? careful: events.js is unloaded when idle for ~2s
-  storage.get('updateTime').then(({updateTime}) => {
+  return storage.get('updateTime').then(({updateTime}) => {
     query(PINBOARD.update).then(json => {
       const latestUpdateTime = json.update_time;
       if (latestUpdateTime !== updateTime) {
@@ -55,6 +64,12 @@ function updateBookmarks() {
         query(PINBOARD.all).then(response => storage.set({bookmarks: response}));
       }
     });
+  });
+}
+
+function suggestTags(url) {
+  return query(PINBOARD.suggest, {url}).then(json => {
+    return uniq(flattenDeep(json.map(Object.values)));
   });
 }
 
@@ -74,7 +89,7 @@ function tabCreated(tab) {
 }
 
 function authenticate() {
-  checkLoggedIn().then(isLoggedIn => {
+  return checkLoggedIn().then(isLoggedIn => {
     if (isLoggedIn) {
       storage.get('token').then(({token}) => {
         if (token) return;

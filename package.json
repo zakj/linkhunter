@@ -11,6 +11,7 @@
     "dist": "yarn build && zip -r linkhunter.zip dist"
   },
   "dependencies": {
+    "lodash": "^4.17.4",
     "mixpanel-browser": "^2.11.0",
     "panel": "^0.10.0"
   },

@@ -1,6 +1,6 @@
 import { Component } from 'panel';
 
-import { openUrl, sendMessage } from '../browser';
+import { openUrl, getSelectedTab, sendMessage } from '../browser';
 import template from './popup.jade';
 import './popup.styl';
 
@@ -27,10 +27,35 @@ document.registerElement('lh-popup', class extends Component {
       defaultState: {
         bookmarks: [],
         filterString: '',
+        addingBookmark: null,
         selectedIndex: 0,
       },
 
+      routes: {
+        '': () => this.update({addingBookmark: null}),
+        'add': () => {
+          this.update({addingBookmark: {}});
+          getSelectedTab().then(([tab]) => {
+            this.update({
+              addingBookmark: {
+                title: tab.title,
+                url: tab.url,
+              },
+            });
+            sendMessage({type: 'suggestTags', url: tab.url}).then(tags => {
+              this.update({
+                addingBookmark: Object.assign({tags}, this.state.addingBookmark),
+              });
+            });
+          });
+        },
+      },
+
       helpers: {
+        addBookmark: () => {
+          this.navigate('add');
+        },
+
         filteredBookmarks: () => {
           return filterBookmarks(this.state.filterString, this.state.bookmarks);
         },
