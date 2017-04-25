@@ -6,8 +6,8 @@
   "license": "MIT",
   "browserslist": "last 2 Chrome versions",
   "scripts": {
+    "start": "rm -rf dist && webpack --progress --watch",
     "build": "rm -rf dist && webpack --env.production",
-    "dev": "rm -rf dist && webpack --progress --watch",
     "dist": "yarn build && zip -r linkhunter.zip dist"
   },
   "dependencies": {
