@@ -1,28 +1,36 @@
-import { sendMessage, storage } from '../browser';
-import './popup';
+import Vue from 'vue';
+import VueRouter from 'vue-router';
 
-const popup = document.querySelector('lh-popup');
+import Add from './add.vue';
+import Search from './search.vue';
+import Settings from './settings.vue';
+import Wrapper from './wrapper.vue';
+import store from '@/store';
 
+Vue.use(VueRouter);
 
-storage.addListener(changes => {
-  if ('bookmarks' in changes) {
-    popup.bookmarks = changes.bookmarks.newValue;
-  }
+const router = new VueRouter({
+  el: '#app',
+  routes: [
+    {path: '/', component: Search},
+    {path: '/add', component: Add},
+    {path: '/settings', component: Settings},
+  ],
 });
 
-storage.get('bookmarks', 'token').then(({bookmarks, token}) => {
-  if (!token) {
-    // TODO: auth directly here instead?
-    sendMessage({type: 'showOptions'});
-    window.close();
-    return;
+// If the user isn't authenticated, only show the settings page.
+router.beforeEach((to, from, next) => store.hydrated.then(() => {
+  if (to.path !== '/settings' && !store.state.token) {
+    next('/settings');
   }
-
-  sendMessage({type: 'updateBookmarks'});
-
-  if (bookmarks) {
-    popup.bookmarks = bookmarks;
-    // TODO: delay?
-    document.body.classList.add('loaded');
+  else {
+    next();
   }
+}));
+
+new Vue({
+  el: '#app',
+  render: h => h(Wrapper),
+  router,
+  store,
 });

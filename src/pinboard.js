@@ -1,7 +1,7 @@
 import flattenDeep from 'lodash/fp/flattenDeep';
 import uniq from 'lodash/fp/uniq';
 
-import { storage } from './browser';
+import {storage} from '@/browser';
 
 
 // https://pinboard.in/api
@@ -11,6 +11,10 @@ const PINBOARD = {
   suggest: 'https://api.pinboard.in/v1/posts/suggest',
   update: 'https://api.pinboard.in/v1/posts/update',
 };
+
+function queryString(obj) {
+  return Object.entries(obj).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+}
 
 function query(url, params) {
   params = params || {};
@@ -30,19 +34,20 @@ function query(url, params) {
   });
 }
 
-function queryString(obj) {
-  return Object.entries(obj).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
-}
-
 
 // Exports.
+
+export function checkLoggedIn() {
+  return fetch(PINBOARD.password, {credentials: 'include'})
+    .then(response => response.ok && response.url === PINBOARD.password);
+}
 
 export function authenticate() {
   return checkLoggedIn().then(isLoggedIn => {
     if (isLoggedIn) {
       storage.get('token').then(({token}) => {
         if (token) return;
-        chrome.tabs.create({url: PINBOARD.password, active: false}, (tab) => {
+        chrome.tabs.create({url: PINBOARD.password, active: false}, tab => {
           chrome.tabs.executeScript(tab.id,
             {
               file: 'find-api-token.js',
@@ -59,12 +64,6 @@ export function authenticate() {
       console.warn('not logged in to Pinboard');
     }
   });
-}
-
-// TODO unused
-export function checkLoggedIn() {
-  return fetch(PINBOARD.password, {credentials: 'include'})
-    .then(response => response.ok && response.url === PINBOARD.password);
 }
 
 export function suggestTags(url) {

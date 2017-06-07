@@ -12,16 +12,27 @@ module.exports = (env={}) => ({
   context: srcDir,
 
   entry: {
-    vendor: ['panel'],
     events: './events',
-    options: './options',
-    popup: './popup',
     'find-api-token': './find-api-token',
+    popup: './popup',
+    vendor: [
+      'mixpanel-browser',
+      'moment',
+      'vue',
+      'vue-router',
+      'vuex',
+    ],
   },
 
   output: {
     path: distDir,
     filename: '[name].js',
+  },
+
+  resolve: {
+    alias: {
+      '@': srcDir,
+    },
   },
 
   module: {
@@ -30,35 +41,21 @@ module.exports = (env={}) => ({
         test: /\.js$/,
         include: srcDir,
         loader: 'babel-loader',
-        options: {
-          compact: false,
-          presets: ['es2015'],
-        },
       },
       {
-        test: /\.jade$/,
-        include: srcDir,
-        loader: 'virtual-jade-loader',
+        test: /\.vue$/,
+        loader: 'vue-loader',
         options: {
-          vdom: 'snabbdom',
-          runtime: 'var h = require("panel").h;',
-        },
-      },
-      {
-        test: /\.styl/,
-        loader: [
-          'style-loader',
-          'css-loader',
-          {
-            loader: 'postcss-loader',
-            options: {plugins: () => [autoprefixer]},
+          cssModules: {
+            localIdentName: '[local]--[hash:base64:5]',
+            camelCase: true,
           },
-          'stylus-loader',
-        ],
+          postcss: [autoprefixer],
+        },
       },
       {
         // Disable ejs for HtmlWebpackPlugin to speed up builds.
-        test: /\.html/,
+        test: /\.html$/,
         include: srcDir,
         loader: 'html-loader',
       },
@@ -66,13 +63,14 @@ module.exports = (env={}) => ({
   },
 
   plugins: [
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),  // exclude i18n
     new webpack.DefinePlugin({
       MIXPANEL_TOKEN: '6cc73b1df12b2e1ba0892da5da2a7216',
       DEBUG: !env.production,
     }),
     new webpack.optimize.CommonsChunkPlugin({
       name: 'vendor',
-      chunks: ['options', 'popup'],
+      chunks: ['popup'],
     }),
     new CopyWebpackPlugin([{
       context: __dirname,
@@ -83,12 +81,6 @@ module.exports = (env={}) => ({
       template: 'popup/index.html',
       filename: 'popup.html',
       title: 'Linkhunter',
-    }),
-    new HtmlWebpackPlugin({
-      chunks: ['vendor', 'options'],
-      template: 'options/index.html',
-      filename: 'options.html',
-      title: 'Linkhunter options',
     }),
   ].concat(env.production ? [new UglifyJsWebpackPlugin()] : []),
 
