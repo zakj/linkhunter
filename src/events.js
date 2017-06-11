@@ -1,14 +1,13 @@
-import {authenticate, checkLoggedIn, suggestTags, updateBookmarks} from '@/pinboard';
+import {checkLoggedIn, suggestTags, updateBookmarks, updateToken} from '@/pinboard';
 import {storage} from '@/browser';
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const [isAsync, handler] = {
-    checkLoggedIn:   [false, checkLoggedIn],  // TODO unused?
+    checkLoggedIn:   [true,  () => checkLoggedIn().then(sendResponse)],
     setToken:        [false, () => storage.set({token: request.token})],
-    showOptions:     [false, () => chrome.runtime.openOptionsPage()],
     suggestTags:     [true,  () => suggestTags(request.url).then(sendResponse)],
     updateBookmarks: [false, updateBookmarks],
-    updateToken:     [false, authenticate],
+    updateToken:     [false, updateToken],
   }[request.type];
   if (handler) {
     handler();

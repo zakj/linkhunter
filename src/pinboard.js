@@ -20,7 +20,7 @@ function query(url, params) {
   params = params || {};
   return storage.get('token').then(({token}) => {
     if (!token) throw new Error('missing token');  // TODO handle this?
-    params.auth_token = token;
+    params.auth_token = token;  // eslint-disable-line camelcase
     params.format = 'json';
     return fetch(`${url}?${queryString(params)}`)
       .then(response => {
@@ -42,34 +42,9 @@ export function checkLoggedIn() {
     .then(response => response.ok && response.url === PINBOARD.password);
 }
 
-export function authenticate() {
-  return checkLoggedIn().then(isLoggedIn => {
-    if (isLoggedIn) {
-      storage.get('token').then(({token}) => {
-        if (token) return;
-        chrome.tabs.create({url: PINBOARD.password, active: false}, tab => {
-          chrome.tabs.executeScript(tab.id,
-            {
-              file: 'find-api-token.js',
-              runAt: 'document_end',
-            },
-            // Defer closing until sendMessage can complete.
-            () => setTimeout(() => chrome.tabs.remove([tab.id]), 250)
-          );
-        });
-      });
-    }
-    else {
-      // TODO
-      console.warn('not logged in to Pinboard');
-    }
-  });
-}
-
 export function suggestTags(url) {
-  return query(PINBOARD.suggest, {url}).then(json => {
-    return uniq(flattenDeep(json.map(Object.values)));
-  });
+  return query(PINBOARD.suggest, {url})
+    .then(json => uniq(flattenDeep(json.map(Object.values))));
 }
 
 export function updateBookmarks() {
@@ -82,5 +57,26 @@ export function updateBookmarks() {
         query(PINBOARD.all).then(response => storage.set({bookmarks: response}));
       }
     });
+  });
+}
+
+export function updateToken() {
+  return checkLoggedIn().then(isLoggedIn => {
+    if (isLoggedIn) {
+      chrome.tabs.create({url: PINBOARD.password, active: false}, tab => {
+        chrome.tabs.executeScript(tab.id,
+          {
+            file: 'find-api-token.js',
+            runAt: 'document_end',
+          },
+          // Defer closing until sendMessage can complete.
+          () => setTimeout(() => chrome.tabs.remove([tab.id]), 250)
+        );
+      });
+    }
+    else {
+      // TODO
+      console.warn('not logged in to Pinboard');
+    }
   });
 }

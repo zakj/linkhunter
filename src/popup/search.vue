@@ -1,7 +1,7 @@
 <template>
   <div>
     <div :class="$style.top">
-      <input type="text" :class="$style.filter"
+      <input type="text" :class="$style.filter" v-focus="true"
         placeholder="Search" :value="filterString"
         @input="handleSearchInput($event)"
         @keydown="handleKeyDown"
@@ -32,6 +32,8 @@
 </template>
 
 <style lang="stylus" module>
+  @require '../util'
+
   .top
     display flex
 
@@ -50,9 +52,10 @@
       color #d3d3d3
 
   .button
-    margin-left 8px
+    @extend $hide-text
     border-radius 4px
     height 40px
+    margin-left 8px
     width 40px
 
   .button-add
@@ -75,7 +78,6 @@
     background #f3f3f3
     border 1px solid transparent
     border-radius 4px
-    cursor pointer
     display flex
     padding 7px
 
@@ -98,30 +100,24 @@
     justify-content center
     min-width 0
 
-  .ellipsis
-    overflow hidden
-    text-overflow ellipsis
-    white-space nowrap
-
   .title
-    @extend .ellipsis
+    @extend $ellipsis
     font-weight bold
 
   .meta
-    color #939393
+    @extend $light-text
     display flex
-    font-size 11px
-    line-height 14px
     :first-child
-      @extend .ellipsis
+      @extend $ellipsis
       flex 1
       margin-right 8px
 </style>
 
 <script>
+  import {focus} from 'vue-focus';
   import {mapState} from 'vuex';
   import moment from 'moment';
-  import {openUrl} from '@/browser';
+  import {openUrl, sendMessage} from '@/browser';
 
   // Used for parsing URLs in iconFor.
   const linkEl = document.createElement('a');
@@ -144,6 +140,8 @@
         selectedIndex: 0,
       };
     },
+
+    directives: {focus},
 
     computed: {
       filteredBookmarks() {
@@ -187,12 +185,12 @@
             this.selectedIndex = Math.max(0, this.selectedIndex - 1);
           },
         }[ev.key];
-        handler && handler();
+        if (handler) handler();
       },
 
       handleSearchInput(ev) {
-        if (this.filterString != ev.target.value) {
-          this.selectedIndex = 0
+        if (this.filterString !== ev.target.value) {
+          this.selectedIndex = 0;
         }
         this.filterString = ev.target.value;
       },
@@ -207,9 +205,12 @@
       },
 
       setSelectedIndex(i) {
-        console.count('setSelectedIndex');
         this.selectedIndex = i;
       },
+    },
+
+    mounted() {
+      sendMessage({type: 'updateBookmarks'});
     },
   };
 </script>
