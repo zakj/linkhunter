@@ -62,7 +62,7 @@
   .logout
     margin-right 2px
     &:hover  // XXX needs design
-      background-image linear-gradient(150deg, rgba(#fff, 50%), rgba(#fff, 0) 80%)
+      background-image linear-gradient(170deg, rgba(#fff, 50%), rgba(#fff, 0) 80%)
 
   .attribution
     flex 1

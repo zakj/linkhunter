@@ -38,10 +38,10 @@
     display flex
 
   .filter
-    border 1px solid #d3d3d3
+    border 1px solid lh-grey-d
     border-radius 4px
     box-shadow inset 0 0 4px rgba(#000, 20%)
-    color #4a4a4a
+    color lh-grey-4
     flex 1
     font bold 18px helvetica neue, sans-serif
     line-height 22px
@@ -49,7 +49,7 @@
     &:focus
       outline none
     &::placeholder
-      color #d3d3d3
+      color lh-grey-d
 
   .button
     @extend $hide-text
@@ -57,25 +57,27 @@
     height 40px
     margin-left 8px
     width 40px
+    &:hover  // XXX needs design
+      background-image linear-gradient(170deg, rgba(#fff, 50%), rgba(#fff, 0) 80%)
 
   .button-add
     @extend .button
-    background #00a2c2
+    background lh-teal
 
   .button-settings
     @extend .button
-    background #4a4a4a
+    background lh-grey-4
 
   .list
     list-style none
     margin-bottom 0
-    margin-top 8px
+    margin-top 8px - 2px
     padding 0
-    > li:not(:first-child)
+    li
       margin-top 2px
 
   .bookmark
-    background #f3f3f3
+    background lh-grey-f
     border 1px solid transparent
     border-radius 4px
     display flex
@@ -83,7 +85,7 @@
 
   .bookmark.selected
     background #fff
-    border-color #f3f3f3
+    border-color lh-grey-f
 
   .icon
     background rgba(#fff, 50%)
