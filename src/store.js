@@ -30,14 +30,14 @@ const store = new Vuex.Store({
       storage.set({bookmarks});
     },
 
-    changeDefaultPrivate(state, defaultPrivate) {
-      state.defaultPrivate = defaultPrivate;
-      storage.set({defaultPrivate});
-    },
-
     changeToken(state, token) {
       state.token = token;
       storage.set({token});
+    },
+
+    toggleDefaultPrivate(state) {
+      state.defaultPrivate = !state.defaultPrivate;
+      storage.set({defaultPrivate: state.defaultPrivate});
     },
 
     updateFromBrowser(state, changes) {

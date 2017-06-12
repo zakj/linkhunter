@@ -39,6 +39,7 @@
     }
   },
   "dependencies": {
+    "animejs": "^2.0.2",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "lodash": "^4.17.4",
     "mixpanel-browser": "^2.11.1",
