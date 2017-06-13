@@ -8,16 +8,7 @@
       <div :class="$style.auth" v-if="token">
         <div :class="$style.username">{{ username }}</div>
         <div>Mark new links private by default</div>
-        <div :class="{[$style.toggle]: true, [$style.toggleOn]: defaultPrivate}"
-          @click="toggleDefaultPrivate">
-          <div :class="$style.toggleButton">
-            <svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-              <g :class="$style.toggleIcon" fill="none" stroke-width="2">
-                <path ref="togglePath" :d="iconPath" />
-              </g>
-            </svg>
-          </div>
-        </div>
+        <toggle :on="defaultPrivate" @toggle="toggleDefaultPrivate"></toggle>
 
         <a @click="openKeyboardShortcuts">
           <span v-if="shortcut === NO_SHORTCUT">Assign a keyboard shortcut</span>
@@ -83,39 +74,6 @@
     line-height 28px
     margin-bottom 5px
 
-  .toggle
-    background lh-grey-4
-    border-radius 24px
-    cursor pointer
-    height 40px
-    margin 12px auto 24px
-    padding 1px
-    transition background 150ms ease-in-out
-    width 72px
-
-  .toggle-button
-    align-items center
-    background #fff
-    border-radius 38px
-    display flex
-    height 38px
-    justify-content center
-    transition transform 150ms ease-in-out
-    width 38px
-
-  .toggle-icon
-    stroke lh-grey-4
-    transition stroke 150ms ease-in-out
-
-  .toggle.toggle-on
-    background lh-teal
-    .toggle-button
-      transform translateX(32px)
-    .toggle-icon
-      stroke lh-teal
-      stroke-linecap round
-      stroke-endcap round
-
   .footer
     @extend $light-text
     display flex
@@ -135,10 +93,10 @@
 </style>
 
 <script>
-  import anime from 'animejs';
   import {checkLoggedIn} from '@/pinboard';
   import {openUrl, sendMessage} from '@/browser';
   import {mapGetters, mapState} from 'vuex';
+  import Toggle from '@/components/toggle';
 
   const SHORTCUT_KEYS = {
     Alt:     '&#x2325;',  // ⌥
@@ -146,11 +104,6 @@
     Ctrl:    '&#x2303;',  // ⌃
     Option:  '&#x2325;',  // ⌥
     Shift:   '&#x21E7;',  // ⇧
-  };
-
-  const ICON_PATHS = {
-    [true]: 'M2,8.5 L5.5,12 M5.5,12 L13,4',
-    [false]: 'M3,3 L13,13 M3,13 L13,3',
   };
 
   export default {
@@ -163,15 +116,14 @@
       };
     },
 
+    components: {Toggle},
+
     computed: {
       ...mapGetters(['username']),
       ...mapState(['defaultPrivate', 'token']),
       friendlyShortcut() {
         return this.shortcut && this.shortcut.split('+')
           .map(v => SHORTCUT_KEYS[v] || `${v} `).join('').trim();
-      },
-      iconPath() {
-        return this.tweeningIconPath || ICON_PATHS[this.defaultPrivate];
       },
     },
 
@@ -215,16 +167,5 @@
       checkLoggedIn().then(val => vm.loggedIn = val);
     },
 
-    watch: {
-      defaultPrivate(newValue, oldValue) {
-        this.tweeningIconPath = ICON_PATHS[oldValue];
-        anime({
-          targets: this.$data,
-          tweeningIconPath: ICON_PATHS[newValue],
-          easing: 'easeOutQuad',
-          duration: 200,
-        });
-      },
-    },
   };
 </script>

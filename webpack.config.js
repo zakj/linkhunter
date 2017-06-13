@@ -33,6 +33,7 @@ module.exports = (env={}) => ({
     alias: {
       '@': srcDir,
     },
+    extensions: ['.js', '.vue'],
   },
 
   module: {
