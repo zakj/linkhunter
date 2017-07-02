@@ -1,5 +1,5 @@
 <template>
-  <div :class="{[$style.isScrolled]: isScrolled}">
+  <div>
     <div :class="$style.top">
       <input type="text" :class="$style.filter" v-focus="true"
         placeholder="Search" :value="filterString"
@@ -9,6 +9,8 @@
       <router-link :class="$style.buttonAdd" to="/add">Add</router-link>
       <router-link :class="$style.buttonSettings" to="/settings">Settings</router-link>
     </div>
+
+    <hr :class="{[$style.rule]: true, [$style.raised]: isScrolled}">
 
     <ul :class="$style.list" v-if="filteredBookmarks.length > 0">
       <virtual-list :start="scrollIndex" :size="58" :remain="9" :onscroll="handleListScroll">
@@ -38,21 +40,29 @@
 
   .top
     display flex
+
+  .rule
+    border none
+    margin 8px -7px -2px
     position relative
-    &::after
-      border-bottom 1px solid lh-grey-f
-      border-top 1px solid lh-grey-d
-      bottom -8px
+
+    &::before, &::after
       content ""
+      background:
+        linear-gradient(
+          to right,
+          rgba(#fff, 1),
+          rgba(#fff, 0) 7%, rgba(#fff, 0) 93%,
+          rgba(#fff, 1)),
+        lh-grey-d
       display block
-      left -8px
+      height 1px
+    &::after
       opacity 0
-      position absolute
-      right -8px
       transition opacity 150ms ease-in-out
 
-  .is-scrolled .top::after
-    opacity 1
+    &.raised::after
+      opacity .5
 
   .filter
     border 1px solid lh-grey-d
@@ -88,7 +98,7 @@
   .list
     list-style none
     margin-bottom 0
-    margin-top 8px
+    margin-top 2px
     padding 0
     li
       padding-top 2px
