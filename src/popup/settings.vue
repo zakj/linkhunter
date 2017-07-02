@@ -10,7 +10,7 @@
         <div>Mark new links private by default</div>
         <toggle :on="defaultPrivate" @toggle="toggleDefaultPrivate"></toggle>
 
-        <a @click="openKeyboardShortcuts">
+        <a @click="openKeyboardShortcuts" v-if="shortcut">
           <span v-if="shortcut === NO_SHORTCUT">Assign a keyboard shortcut</span>
           <span v-else>Open with <span v-html="friendlyShortcut"></span></span>
         </a>
