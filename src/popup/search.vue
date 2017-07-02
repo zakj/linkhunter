@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="{[$style.isScrolled]: isScrolled}">
     <div :class="$style.top">
       <input type="text" :class="$style.filter" v-focus="true"
         placeholder="Search" :value="filterString"
@@ -10,23 +10,25 @@
       <router-link :class="$style.buttonSettings" to="/settings">Settings</router-link>
     </div>
 
-    <ul :class="$style.list">
-      <li v-for="(bookmark, i) in filteredBookmarks">
-        <a :class="{[$style.bookmark]: true, [$style.selected]: i === selectedIndex}"
-          @click="handleBookmarkClick($event, bookmark.href)"
-          @mouseenter="setSelectedIndex(i)">
-          <div :class="$style.icon">
-            <img :src="iconFor(bookmark.href)" width="16" height="16">
-          </div>
-          <div :class="$style.text">
-            <div :class="$style.title">{{ bookmark.description }}</div>
-            <div :class="$style.meta">
-              <div>{{ bookmark.href }}</div>
-              <div>{{ age(bookmark.time) }}</div>
+    <ul :class="$style.list" v-if="filteredBookmarks.length > 0">
+      <virtual-list :start="scrollIndex" :size="58" :remain="9" :onscroll="handleListScroll">
+        <li v-for="(bookmark, i) in filteredBookmarks" :key="i">
+          <a :class="{[$style.bookmark]: true, [$style.selected]: i === selectedIndex}"
+            @click="handleBookmarkClick($event, bookmark.href)"
+            @mouseenter="setSelectedIndex(i)">
+            <div :class="$style.icon">
+              <img :src="iconFor(bookmark.href)" width="16" height="16">
             </div>
-          </div>
-        </a>
-      </li>
+            <div :class="$style.text">
+              <div :class="$style.title">{{ bookmark.description }}</div>
+              <div :class="$style.meta">
+                <div>{{ bookmark.href }}</div>
+                <div>{{ age(bookmark.time) }}</div>
+              </div>
+            </div>
+          </a>
+        </li>
+      </virtual-list>
     </ul>
   </div>
 </template>
@@ -36,6 +38,21 @@
 
   .top
     display flex
+    position relative
+    &::after
+      border-bottom 1px solid lh-grey-f
+      border-top 1px solid lh-grey-d
+      bottom -8px
+      content ""
+      display block
+      left -8px
+      opacity 0
+      position absolute
+      right -8px
+      transition opacity 150ms ease-in-out
+
+  .is-scrolled .top::after
+    opacity 1
 
   .filter
     border 1px solid lh-grey-d
@@ -71,10 +88,10 @@
   .list
     list-style none
     margin-bottom 0
-    margin-top 8px - 2px
+    margin-top 8px
     padding 0
     li
-      margin-top 2px
+      padding-top 2px
 
   .bookmark
     background lh-grey-f
@@ -120,6 +137,7 @@
   import {mapState} from 'vuex';
   import moment from 'moment';
   import {openUrl, sendMessage} from '@/browser';
+  import VirtualList from 'vue-virtual-scroll-list';
 
   // Used for parsing URLs in iconFor.
   const linkEl = document.createElement('a');
@@ -139,11 +157,14 @@
     data() {
       return {
         filterString: '',
+        isScrolled: false,
+        scrollIndex: 0,
         selectedIndex: 0,
       };
     },
 
     directives: {focus},
+    components: {VirtualList},
 
     computed: {
       filteredBookmarks() {
@@ -182,12 +203,18 @@
               this.filteredBookmarks.length - 1,
               this.selectedIndex + 1
             );
+            this.scrollIndex = Math.max(0, this.selectedIndex - 4);
           },
           ArrowUp: () => {
             this.selectedIndex = Math.max(0, this.selectedIndex - 1);
+            this.scrollIndex = Math.max(0, this.selectedIndex - 4);
           },
         }[ev.key];
         if (handler) handler();
+      },
+
+      handleListScroll(ev, position) {
+        this.isScrolled = position > 0;
       },
 
       handleSearchInput(ev) {
