@@ -65,31 +65,17 @@
       opacity .5
 
   .filter
-    border 1px solid lh-grey-d
-    border-radius 4px
-    box-shadow inset 0 0 4px rgba(#000, 20%)
-    color lh-grey-4
+    @extend $input
     flex 1
-    font bold 18px helvetica neue, sans-serif
-    line-height 22px
-    padding ((40px - @line-height - 2px) / 2) 15px
-    &:focus
-      outline none
-    &::placeholder
-      color lh-grey-d
 
   .button
+    @extend $button
     @extend $hide-text
-    border-radius 4px
-    height 40px
     margin-left 8px
     width 40px
-    &:hover  // XXX needs design
-      background-image linear-gradient(170deg, rgba(#fff, 50%), rgba(#fff, 0) 80%)
 
   .button-add
     @extend .button
-    background lh-teal
 
   .button-settings
     @extend .button

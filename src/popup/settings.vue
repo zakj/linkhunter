@@ -1,10 +1,6 @@
 <template>
-  <div v-shortkey="['escape']" @shortkey="XXX()">
-    <div :class="$style.settings" class="pane">
-      <router-link to="/" class="close-button">Close</router-link>
-      <div style="width: 56px; height: 56px; outline: 1px solid orange;">MARK</div>
-      <div style="outline: 1px solid orange;">Linkhunter</div>
-
+  <div>
+    <pane :class="$style.settings" :showClose="token" title="Linkhunter">
       <div :class="$style.auth" v-if="token">
         <div :class="$style.username">{{ username }}</div>
         <div>Mark new links private by default</div>
@@ -26,13 +22,13 @@
           <a :class="$style.button" @click="login">Log in on Pinboard</a>
         </div>
       </div>
-    </div>
+    </pane>
 
     <footer :class="$style.footer">
-      <a v-if="token" @click="clearToken" :class="$style.logout" class="pane">
+      <a v-if="token" @click="clearToken" :class="$style.logout">
         Logout
       </a>
-      <div :class="$style.attribution" class="pane">
+      <div :class="$style.attribution">
         <a @click="openFeedbackPage">Feedback</a>
         <span :class="$style.dot">·</span>
         Made by <a @click="openHomepage">Zak Johnson</a>
@@ -48,25 +44,13 @@
     align-items center
     display flex
     flex-direction column
-    padding 48px
 
   .auth
     margin-top 42px
     text-align center
 
   .button
-    background lh-teal
-    border-radius 4px
-    color #fff
-    display block
-    font-size 14px
-    font-weight bold
-    height 40px
-    padding 11px 20px
-    text-transform uppercase
-    -webkit-font-smoothing antialiased
-    &:hover  // XXX needs design
-      background-image linear-gradient(170deg, rgba(#fff, 40%), rgba(#fff, 0) 80%)
+    @extend $button
 
   .username
     font-size 24px
@@ -80,11 +64,13 @@
     margin-top 2px
 
   .logout
+    @extend $pane
     margin-right 2px
     &:hover  // XXX needs design
       background-image linear-gradient(170deg, rgba(#fff, 50%), rgba(#fff, 0) 80%)
 
   .attribution
+    @extend $pane
     flex 1
     text-align right
 
@@ -96,6 +82,7 @@
   import {checkLoggedIn} from '@/pinboard';
   import {openUrl, sendMessage} from '@/browser';
   import {mapGetters, mapState} from 'vuex';
+  import Pane from '@/components/pane';
   import Toggle from '@/components/toggle';
 
   const SHORTCUT_KEYS = {
@@ -107,6 +94,8 @@
   };
 
   export default {
+    components: {Pane, Toggle},
+
     data() {
       return {
         loggedIn: null,
@@ -115,8 +104,6 @@
         tweeningIconPath: null,
       };
     },
-
-    components: {Toggle},
 
     computed: {
       ...mapGetters(['username']),
@@ -158,14 +145,12 @@
     },
 
     mounted() {
-      const vm = this;
       chrome.commands.getAll(commands => {
         const action = commands.find(c => c.name === '_execute_browser_action');
-        vm.shortcut = action && action.shortcut || vm.NO_SHORTCUT;
+        this.shortcut = action && action.shortcut || this.NO_SHORTCUT;
       });
       // TODO: this doesn't work via a sendMessage. why?
-      checkLoggedIn().then(val => vm.loggedIn = val);
+      checkLoggedIn().then(val => this.loggedIn = val);
     },
-
   };
 </script>
