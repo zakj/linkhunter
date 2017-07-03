@@ -7,6 +7,7 @@
   "browserslist": "last 3 Chrome versions",
   "scripts": {
     "start": "rm -rf dist && webpack --progress --watch",
+    "analyze": "webpack --env.analyze",
     "build": "rm -rf dist && webpack --env.production",
     "dist": "yarn build && zip -r linkhunter.zip dist"
   },
@@ -70,6 +71,7 @@
     "uglifyjs-webpack-plugin": "^0.4.3",
     "vue-loader": "^12.2.1",
     "vue-template-compiler": "^2.3.3",
-    "webpack": "^2.6.1"
+    "webpack": "^2.6.1",
+    "webpack-bundle-analyzer": "^2.8.2"
   }
 }
