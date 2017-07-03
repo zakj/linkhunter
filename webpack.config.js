@@ -45,7 +45,7 @@ module.exports = (env={}) => {
       rules: [
         {
           test: /\.js$/,
-          include: srcDir,
+          include: [srcDir, path.resolve(__dirname, 'node_modules/vue-virtual-scroll-list')],
           loader: 'babel-loader',
         },
         {
