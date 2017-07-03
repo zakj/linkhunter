@@ -13,7 +13,8 @@
     <hr :class="{[$style.rule]: true, [$style.raised]: isScrolled}">
 
     <ul :class="$style.list" v-if="filteredBookmarks.length > 0">
-      <virtual-list :start="scrollIndex" :size="58" :remain="9" :onscroll="handleListScroll">
+      <virtual-list :start="scrollIndex" :size="58" :remain="9"
+        :onscroll="handleListScroll" ref="virtualList">
         <li v-for="(bookmark, i) in filteredBookmarks" :key="i">
           <a :class="{[$style.bookmark]: true, [$style.selected]: i === selectedIndex}"
             @click="handleBookmarkClick($event, bookmark.href)"
@@ -43,11 +44,24 @@
 
   .rule
     border none
-    margin 8px -7px -2px
+    margin 8px -7px -3px
     position relative
 
     &::before, &::after
       content ""
+      display block
+      height 1px
+      opacity 0
+      transition opacity 150ms ease-in-out
+    &::before
+      background:
+        linear-gradient(
+          to right,
+          rgba(#fff, 1),
+          rgba(#fff, 0) 7%, rgba(#fff, 0) 93%,
+          rgba(#fff, 1)),
+        rgba(lh-grey-4, .5)
+    &::after
       background:
         linear-gradient(
           to right,
@@ -55,14 +69,11 @@
           rgba(#fff, 0) 7%, rgba(#fff, 0) 93%,
           rgba(#fff, 1)),
         lh-grey-d
-      display block
-      height 1px
-    &::after
-      opacity 0
-      transition opacity 150ms ease-in-out
-
-    &.raised::after
-      opacity .5
+    &.raised
+      &::before
+        opacity 1
+      &::after
+        opacity .5
 
   .filter
     @extend $input
@@ -86,6 +97,10 @@
     margin-bottom 0
     margin-top 2px
     padding 0
+    > div
+      // HACK: keep some space at the top of the virtual container.
+      box-sizing content-box
+      padding-top 6px
     li
       padding-top 2px
 
@@ -215,6 +230,8 @@
 
       handleSearchInput(ev) {
         if (this.filterString !== ev.target.value) {
+          this.$refs.virtualList.$refs.container.scrollTop = 0;  // HACK
+          this.scrollIndex = 0;
           this.selectedIndex = 0;
         }
         this.filterString = ev.target.value;
