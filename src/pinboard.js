@@ -1,8 +1,7 @@
 import flattenDeep from 'lodash/fp/flattenDeep';
 import uniq from 'lodash/fp/uniq';
 
-import {storage} from '@/browser';
-
+import store from '@/store';
 
 // https://pinboard.in/api
 const PINBOARD = {
@@ -17,19 +16,22 @@ function queryString(obj) {
 }
 
 function query(url, params) {
-  params = params || {};
-  return storage.get('token').then(({token}) => {
-    if (!token) throw new Error('missing token');  // TODO handle this?
-    params.auth_token = token;  // eslint-disable-line camelcase
+  return store.hydrate.then(() => {
+    if (!store.state.token) throw new Error('missing Pinboard token');
+    params = params || {};
+    params.auth_token = store.state.token;  // eslint-disable-line camelcase
     params.format = 'json';
     return fetch(`${url}?${queryString(params)}`)
       .then(response => {
         if (!response.ok) {
           // TODO backoff on response.status === 429
-          // TODO user notification?
-          throw new Error(response);  // TODO handle this?
+          throw new Error(response);
         }
         return response.json();
+      })
+      .catch(error => {
+        store.commit('setPinboardError', error);
+        throw error;
       });
   });
 }
@@ -37,46 +39,30 @@ function query(url, params) {
 
 // Exports.
 
-export function checkLoggedIn() {
+export function getLoggedIn() {
   return fetch(PINBOARD.password, {credentials: 'include'})
-    .then(response => response.ok && response.url === PINBOARD.password);
+    .then(response => response.ok && response.url === PINBOARD.password)
+    .catch(error => {
+      store.commit('setPinboardError', error);
+      throw error;
+    });
 }
 
-export function suggestTags(url) {
+export function getSuggestedTags(url) {
   return query(PINBOARD.suggest, {url})
     .then(json => uniq(flattenDeep(json.map(Object.values))));
 }
 
 export function updateBookmarks() {
   // TODO throttle? careful: events.js is unloaded when idle for ~2s
-  return storage.get('updateTime').then(({updateTime}) => {
+  store.hydrate.then(() => {
+    const updateTime = store.state.updateTime;
     query(PINBOARD.update).then(json => {
       const latestUpdateTime = json.update_time;
       if (latestUpdateTime !== updateTime) {
-        storage.set({updateTime: latestUpdateTime});
-        query(PINBOARD.all).then(response => storage.set({bookmarks: response}));
+        store.commit('setUpdateTime', latestUpdateTime);
+        query(PINBOARD.all).then(response => store.commit('setBookmarks', response));
       }
     });
-  });
-}
-
-export function updateToken() {
-  return checkLoggedIn().then(isLoggedIn => {
-    if (isLoggedIn) {
-      chrome.tabs.create({url: PINBOARD.password, active: false}, tab => {
-        chrome.tabs.executeScript(tab.id,
-          {
-            file: 'find-api-token.js',
-            runAt: 'document_end',
-          },
-          // Defer closing until sendMessage can complete.
-          () => setTimeout(() => chrome.tabs.remove([tab.id]), 250)
-        );
-      });
-    }
-    else {
-      // TODO
-      console.warn('not logged in to Pinboard');
-    }
   });
 }

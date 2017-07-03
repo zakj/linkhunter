@@ -147,7 +147,8 @@
   import {focus} from 'vue-focus';
   import {mapState} from 'vuex';
   import moment from 'moment';
-  import {openUrl, sendMessage} from '@/browser';
+  import {openUrl} from '@/browser';
+  import {updateBookmarks} from '@/pinboard';
   import VirtualList from 'vue-virtual-scroll-list';
 
   // Used for parsing URLs in iconFor.
@@ -252,7 +253,7 @@
     },
 
     mounted() {
-      sendMessage({type: 'updateBookmarks'});
+      updateBookmarks();
     },
   };
 </script>

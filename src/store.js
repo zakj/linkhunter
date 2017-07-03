@@ -12,7 +12,9 @@ const store = new Vuex.Store({
   state: {
     bookmarks: [],
     defaultPrivate: false,
+    pinboardError: null,
     token: null,
+    updateTime: null,
   },
 
   getters: {
@@ -20,46 +22,52 @@ const store = new Vuex.Store({
   },
 
   mutations: {
-    // addBookmark(state, bookmark) {
-    //   state.bookmarks.push(bookmark);  // XXX needed?
-    //   // XXX storage
-    // },
+    clearPinboardError(state) {
+      state.pinboardError = null;
+    },
 
-    changeBookmarks(state, bookmarks) {
+    clearToken(state) {
+      state.token = null;
+      storage.set({token: null});
+    },
+
+    setPinboardError(state, error) {
+      state.pinboardError = 'message' in error ? error.message : error.toString();
+    },
+
+    setBookmarks(state, bookmarks) {
       state.bookmarks = bookmarks;
       storage.set({bookmarks});
     },
 
-    changeToken(state, token) {
-      state.token = token;
-      storage.set({token});
+    setUpdateTime(state, updateTime) {
+      state.updateTime = updateTime;
+    },
+
+    syncBrowser(state, changes) {
+      // This will be called redundantly after one of the other mutations runs,
+      // but that's ok---dirty checking will make it a no-op.
+      Object.keys(state).forEach(v => {
+        if (v in changes) {
+          state[v] = changes[v];
+        }
+      });
     },
 
     toggleDefaultPrivate(state) {
       state.defaultPrivate = !state.defaultPrivate;
       storage.set({defaultPrivate: state.defaultPrivate});
     },
-
-    updateFromBrowser(state, changes) {
-      // This will be called redundantly after one of the above mutations runs,
-      // but that's ok---dirty checking will make it a no-op.
-      ['bookmarks', 'defaultPrivate', 'token'].forEach(v => {
-        if (v in changes) {
-          state[v] = changes[v];
-          // Vue.set(state, v, changes[v]);
-        }
-      });
-    },
   },
 });
 
-store.hydrated = new Promise(resolve => {
+store.hydrate = new Promise(resolve => {
   storage.addListener(changes => {
-    store.commit('updateFromBrowser', mapValues(v => v.newValue, changes));
+    store.commit('syncBrowser', mapValues(v => v.newValue, changes));
   });
 
-  storage.get('bookmarks', 'defaultPrivate', 'token').then(changes => {
-    store.commit('updateFromBrowser', changes);
+  storage.get(...Object.keys(store.state)).then(changes => {
+    store.commit('syncBrowser', changes);
     resolve();
   });
 });

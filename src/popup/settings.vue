@@ -1,6 +1,6 @@
 <template>
   <div>
-    <pane :class="$style.settings" :showClose="token" title="Linkhunter">
+    <pane :class="$style.settings" :showClose="!!token" title="Linkhunter">
       <div :class="$style.auth" v-if="token">
         <div :class="$style.username">{{ username }}</div>
         <div>Mark new links private by default</div>
@@ -79,7 +79,7 @@
 </style>
 
 <script>
-  import {checkLoggedIn} from '@/pinboard';
+  import {getLoggedIn} from '@/pinboard';
   import {openUrl, sendMessage} from '@/browser';
   import {mapGetters, mapState} from 'vuex';
   import Pane from '@/components/pane';
@@ -120,7 +120,7 @@
       },
 
       clearToken() {
-        this.$store.commit('changeToken', null);
+        this.$store.commit('clearToken');
       },
 
       openFeedbackPage() {
@@ -140,17 +140,17 @@
       },
 
       updateToken() {
-        sendMessage({type: 'updateToken'});
+        sendMessage({type: 'fetchPinboardToken'});
       },
     },
 
     mounted() {
+      // TODO: move to browser.js
       chrome.commands.getAll(commands => {
         const action = commands.find(c => c.name === '_execute_browser_action');
         this.shortcut = action && action.shortcut || this.NO_SHORTCUT;
       });
-      // TODO: this doesn't work via a sendMessage. why?
-      checkLoggedIn().then(val => this.loggedIn = val);
+      getLoggedIn().then(val => this.loggedIn = val);
     },
   };
 </script>

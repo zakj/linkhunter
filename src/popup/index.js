@@ -19,7 +19,7 @@ const router = new VueRouter({
 });
 
 // If the user isn't authenticated, only show the settings page.
-router.beforeEach((to, from, next) => store.hydrated.then(() => {
+router.beforeEach((to, from, next) => store.hydrate.then(() => {
   if (to.path !== '/settings' && !store.state.token) {
     next('/settings');
   }

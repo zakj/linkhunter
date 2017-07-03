@@ -1,6 +1,22 @@
+export function fetchPinboardToken() {
+  const url = 'https://pinboard.in/settings/password';
+  chrome.tabs.create({url, active: false}, tab => {
+    chrome.tabs.executeScript(tab.id,
+      {
+        file: 'find-api-token.js',
+        runAt: 'document_end',
+      },
+      // Defer closing until sendMessage in find-api-token.js can complete.
+      () => setTimeout(() => chrome.tabs.remove([tab.id]), 250)
+    );
+  });
+}
+
 export function getSelectedTab() {
   const queryInfo = {active: true, currentWindow: true};
-  return new Promise(resolve => chrome.tabs.query(queryInfo, resolve));
+  return new Promise(resolve => {
+    chrome.tabs.query(queryInfo, tabs => resolve(tabs[0]));
+  });
 }
 
 export function openUrl({url, background=false}) {
