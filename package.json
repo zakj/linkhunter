@@ -69,9 +69,9 @@
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.1",
     "uglifyjs-webpack-plugin": "^0.4.3",
-    "vue-loader": "^12.2.1",
+    "vue-loader": "^13.0.0",
     "vue-template-compiler": "^2.3.3",
-    "webpack": "^2.6.1",
+    "webpack": "^3.0.0",
     "webpack-bundle-analyzer": "^2.8.2"
   }
 }

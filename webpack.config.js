@@ -78,6 +78,7 @@ module.exports = (env={}) => {
         name: 'vendor',
         chunks: ['popup'],
       }),
+      new webpack.optimize.ModuleConcatenationPlugin(),
       new CopyWebpackPlugin([{
         context: __dirname,
         from: 'manifest.json',
