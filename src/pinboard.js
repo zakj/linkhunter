@@ -60,8 +60,13 @@ export function updateBookmarks() {
     query(PINBOARD.update).then(json => {
       const latestUpdateTime = json.update_time;
       if (latestUpdateTime !== updateTime) {
-        store.commit('setUpdateTime', latestUpdateTime);
-        query(PINBOARD.all).then(response => store.commit('setBookmarks', response));
+        query(PINBOARD.all).then(bookmarks => {
+          bookmarks = bookmarks.map(bookmark => {
+            bookmark.tags = bookmark.tags.split();
+            return bookmark;
+          });
+          store.commit('setBookmarks', bookmarks);
+        });
       }
     });
   });
