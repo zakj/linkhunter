@@ -62,7 +62,7 @@ export function updateBookmarks() {
       if (latestUpdateTime !== updateTime) {
         query(PINBOARD.all).then(bookmarks => {
           bookmarks = bookmarks.map(bookmark => {
-            bookmark.tags = bookmark.tags.split();
+            bookmark.tags = bookmark.tags.split(' ').filter(t => t);
             return bookmark;
           });
           store.commit('setBookmarks', bookmarks);

@@ -5,27 +5,14 @@
       <!-- TODO style -->
       You bookmarked this page {{ existingBookmarkAge }}.
     </div>
+
     <input :class="$style.title" placeholder="Title" :value="bookmark.description">
     <input :class="$style.url" placeholder="URL" tabindex="-1" :value="bookmark.href">
-    <transition-group tag="ul" :class="$style.tags"
-      :name="animateTags && !animateTagPause ? 'tag' : null">
-      <li :class="$style.tag" v-for="tag in bookmark.tags" :key="tag"
-        @click="removeTag(tag)">{{ tag }}</li>
-      <!-- TODO: add close X -->
-      <!-- TODO: tag autocomplete -->
-      <input :class="$style.tagInput" :placeholder="addTagPlaceholder"
-        key=" " :size="tagInputSize"
-        :value="newTag"
-        @input="handleTagInput"
-        @keydown="handleTagKeyDown">
-    </transition-group>
-    <transition-group tag="ul" :class="$style.suggestedTags"
-      :name="animateTags ? 'tag' : null">
-      <li v-for="tag in unusedSuggestedTags" :class="$style.tag"
-        @click="addTag(tag)" :key="tag">
-        {{ tag }}
-      </li>
-    </transition-group>
+    <tag-editor :class="$style.tags"
+      :tags="bookmark.tags"
+      :suggested-tags="suggestedTags"
+      :loaded="loadedSuggestedTags"
+      @add="addTag" @remove="removeTag"></tag-editor>
 
     <!-- TODO: style -->
     <label><input type="checkbox"> This link is private</label>
@@ -33,18 +20,6 @@
     <a :class="$style.button">Save to Pinboard</a>
   </pane>
 </template>
-
-<style lang="stylus">
-  @require '../util';
-
-  .tag-enter-active, .tag-leave-active
-    transition all 250ms ease-out-back
-  .tag-leave-active
-    transition-timing-function ease-out
-  .tag-enter, .tag-leave-to
-    opacity .3
-    transform scale(0)
-</style>
 
 <style lang="stylus" module>
   @require '../util';
@@ -55,18 +30,16 @@
     flex-direction column
     padding 32px
 
-  .title, .url, .tags
+  .title, .url
     @extend $input
     width 100%
 
-  .url, .tags
+  .url
     light-text()
     line-height 22px
-
-  .url
     margin 8px 0
-    transition all 150ms ease-in-out
     transform translateY(0)
+    transition all 150ms ease-in-out
     &:not(:focus)
       background-color transparent
       border-color transparent
@@ -75,51 +48,8 @@
       &:hover
         color lh-teal
 
-  tag-bottom-margin = 4px
-  tag-height = 21px
-  $tags
-    light-text()
-    align-items center
-    display flex
-    flex-wrap wrap
-    width 100%
-    .tag
-      border-radius 16px
-      cursor pointer
-      line-height tag-height
-      margin-bottom tag-bottom-margin
-      margin-right 4px
-      padding 0 10px
-      user-select none
-      &:hover  // XXX needs design, copied from button. factor into shine mixin?
-        background-image linear-gradient(170deg, rgba(#fff, 50%), rgba(#fff, 0) 80%)
-
   .tags
-    @extend $tags
-    list-style none
-    margin 0
-    min-height 40px
-    padding-bottom 8px - tag-bottom-margin
-    .tag
-      background lh-grey-4
-      color #fff
-      -webkit-font-smoothing antialiased
-    .tag-input
-      border none
-      line-height tag-height
-      margin-bottom tag-bottom-margin
-      padding 0
-      flex 1
-      &:focus
-        outline none
-
-  .suggested-tags
-    @extend $tags
-    plain-list()
-    margin-top 8px
-    .tag
-      background rgba(#fff, .5)
-      display inline-block
+    width 100%
 
   .button
     @extend $button
@@ -130,21 +60,19 @@
   import moment from 'moment';
   import {getSuggestedTags} from '@/pinboard';
   import Pane from '@/components/pane';
+  import TagEditor from '@/components/tag-editor';
 
   export default {
-    components: {Pane},
+    components: {Pane, TagEditor},
 
     data() {
       return {
-        addTagPlaceholder: 'Add tags',
-        animateTags: false,
-        animateTagPause: false,
         bookmark: {
           description: null,
           href: null,
           tags: [],
         },
-        newTag: '',
+        loadedSuggestedTags: false,
         suggestedTags: [],
       };
     },
@@ -159,60 +87,17 @@
         return moment(this.existingBookmark.time).fromNow();
       },
 
-      tagInputSize() {
-        return Math.max(1, this.newTag.length, this.addTagPlaceholder.length);
-      },
-
       title() {
         return `${this.existingBookmark ? 'Edit' : 'Add'} Link`;
-      },
-
-      unusedSuggestedTags() {
-        return this.suggestedTags.filter(t => !this.bookmark.tags.includes(t));
       },
     },
 
     methods: {
       addTag(tag) {
         tag = tag.trim();
-        if (!this.bookmark.tags.includes(tag)) {
+        if (tag && !this.bookmark.tags.includes(tag)) {
           this.bookmark.tags.push(tag);
         }
-      },
-
-      handleTagInput(ev) {
-        this.addTagPlaceholder = '';
-        this.newTag = ev.target.value || '';
-      },
-
-      handleTagKeyDown(ev) {
-        const addTag = () => {
-          ev.preventDefault();
-          this.addTag(this.newTag);
-          this.newTag = '';
-        };
-        const handler = {
-          Backspace: () => {
-            if (this.newTag === '') {
-              ev.preventDefault();
-              this.animateTagPause = true;
-              const newTag = this.bookmark.tags.pop() || '';
-              // Prevent flash when deleting into an existing tag by waiting at
-              // least one render cycle.
-              setTimeout(() => {
-                this.animateTagPause = false;
-                this.newTag = newTag;
-              }, 16);
-            }
-          },
-          Escape: () => {
-            ev.preventDefault();
-            this.newTag = '';
-          },
-          Enter: addTag,
-          ' ': addTag,
-        }[ev.key];
-        if (handler) handler();
       },
 
       removeTag(tag) {
@@ -222,12 +107,13 @@
 
     mounted() {
       // XXX how to handle changing url on an existing link?
+      // XXX/TODO: set desc/url on model when changing inputs
       getSelectedTab().then(t => {
         this.bookmark.href = t.url;
         this.bookmark.description = t.title;
         getSuggestedTags(t.url).then(tags => {
           this.suggestedTags = tags;
-          requestAnimationFrame(() => this.animateTags = true);
+          requestAnimationFrame(() => this.loadedSuggestedTags = true);
         });
         if (this.existingBookmark) {  // depends on this.bookmark.href
           this.bookmark.description = this.existingBookmark.description;
