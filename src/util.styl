@@ -1,26 +1,28 @@
 lh-grey-4 = #4a4a4a
+lh-grey-9 = #939393
 lh-grey-d = #d3d3d3
 lh-grey-f = #f3f3f3
 lh-salmon = #f33
 lh-teal = #00a2c2
 
-$ellipsis
+ellipsis()
   overflow hidden
   text-overflow ellipsis
   white-space nowrap
 
-$hide-text
+hide-text()
   overflow hidden
   text-indent 110%
   white-space nowrap
 
-$light-text
-  color #939393
+light-text()
+  color lh-grey-9
   font-size 11px
+  font-weight normal
   line-height 14px
 
 $pane
-  background #f3f3f3
+  background lh-grey-f
   border-radius 4px
   padding 10px 15px
 
@@ -40,6 +42,7 @@ $button
     background-image linear-gradient(170deg, rgba(#fff, 50%), rgba(#fff, 0) 80%)
 
 $input
+  background #fff
   border 1px solid lh-grey-d
   border-radius 4px
   box-shadow inset 0 0 2px rgba(#000, 20%)

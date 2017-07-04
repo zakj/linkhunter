@@ -17,7 +17,7 @@
     position relative
 
   .close-button
-    @extend $hide-text
+    hide-text()
     height 12px + (8px * 2)
     padding 8px
     position absolute

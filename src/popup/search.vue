@@ -81,7 +81,7 @@
 
   .button
     @extend $button
-    @extend $hide-text
+    hide-text()
     margin-left 8px
     width 40px
 
@@ -131,14 +131,14 @@
     min-width 0
 
   .title
-    @extend $ellipsis
+    ellipsis()
     font-weight bold
 
   .meta
-    @extend $light-text
+    light-text()
     display flex
     :first-child
-      @extend $ellipsis
+      ellipsis()
       flex 1
       margin-right 8px
 </style>

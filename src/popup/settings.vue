@@ -59,7 +59,7 @@
     margin-bottom 5px
 
   .footer
-    @extend $light-text
+    light-text()
     display flex
     margin-top 2px
 
