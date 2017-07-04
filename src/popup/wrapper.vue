@@ -1,9 +1,10 @@
 <template>
   <div>
+    <router-view></router-view>
+    <!-- TODO: cut off on search page -->
     <a v-if="pinboardError" :class="$style.error" @click="clearPinboardError">
       Pinboard error: {{ pinboardError }}
     </a>
-    <router-view></router-view>
   </div>
 </template>
 
@@ -28,7 +29,7 @@
     font-family Georgia, serif
     font-size 14px
     font-style italic
-    margin-bottom 8px
+    margin-top 8px
 </style>
 
 <script>

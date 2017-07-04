@@ -32,7 +32,12 @@ const store = new Vuex.Store({
     },
 
     setPinboardError(state, error) {
-      state.pinboardError = 'message' in error ? error.message : error.toString();
+      if (error.hasOwnProperty('message')) {
+        state.pinboardError = error.message;
+      }
+      else {
+        state.pinboardError = error.toString();
+      }
     },
 
     setBookmarks(state, bookmarks) {
