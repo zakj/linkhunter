@@ -7,20 +7,25 @@
     </div>
     <input :class="$style.title" placeholder="Title" :value="bookmark.description">
     <input :class="$style.url" placeholder="URL" tabindex="-1" :value="bookmark.href">
-    <ul :class="$style.tags">
-      <li :class="$style.tag" v-for="tag in bookmark.tags">{{ tag }}</li>
+    <transition-group tag="ul" :class="$style.tags"
+      :name="animateTags && !animateTagPause ? 'tag' : null">
+      <li :class="$style.tag" v-for="tag in bookmark.tags" :key="tag"
+        @click="removeTag(tag)">{{ tag }}</li>
       <!-- TODO: add close X -->
-      <!-- TODO: input switches to new line too soon -->
+      <!-- TODO: tag autocomplete -->
       <input :class="$style.tagInput" :placeholder="addTagPlaceholder"
+        key=" " :size="tagInputSize"
         :value="newTag"
         @input="handleTagInput"
         @keydown="handleTagKeyDown">
-    </ul>
-    <ul :class="$style.suggestedTags">
-      <li :class="$style.tag" v-for="tag in unusedSuggestedTags" @click="addTag(tag)">
+    </transition-group>
+    <transition-group tag="ul" :class="$style.suggestedTags"
+      :name="animateTags ? 'tag' : null">
+      <li v-for="tag in unusedSuggestedTags" :class="$style.tag"
+        @click="addTag(tag)" :key="tag">
         {{ tag }}
       </li>
-    </ul>
+    </transition-group>
 
     <!-- TODO: style -->
     <label><input type="checkbox"> This link is private</label>
@@ -28,6 +33,18 @@
     <a :class="$style.button">Save to Pinboard</a>
   </pane>
 </template>
+
+<style lang="stylus">
+  @require '../util';
+
+  .tag-enter-active, .tag-leave-active
+    transition all 250ms ease-out-back
+  .tag-leave-active
+    transition-timing-function ease-out
+  .tag-enter, .tag-leave-to
+    opacity .3
+    transform scale(0)
+</style>
 
 <style lang="stylus" module>
   @require '../util';
@@ -73,6 +90,7 @@
       margin-bottom tag-bottom-margin
       margin-right 4px
       padding 0 10px
+      user-select none
       &:hover  // XXX needs design, copied from button. factor into shine mixin?
         background-image linear-gradient(170deg, rgba(#fff, 50%), rgba(#fff, 0) 80%)
 
@@ -81,12 +99,12 @@
     list-style none
     margin 0
     min-height 40px
-    padding-bottom 4px
+    padding-bottom 8px - tag-bottom-margin
     .tag
       background lh-grey-4
       color #fff
       -webkit-font-smoothing antialiased
-    > input
+    .tag-input
       border none
       line-height tag-height
       margin-bottom tag-bottom-margin
@@ -119,6 +137,8 @@
     data() {
       return {
         addTagPlaceholder: 'Add tags',
+        animateTags: false,
+        animateTagPause: false,
         bookmark: {
           description: null,
           href: null,
@@ -139,6 +159,10 @@
         return moment(this.existingBookmark.time).fromNow();
       },
 
+      tagInputSize() {
+        return Math.max(1, this.newTag.length, this.addTagPlaceholder.length);
+      },
+
       title() {
         return `${this.existingBookmark ? 'Edit' : 'Add'} Link`;
       },
@@ -157,13 +181,13 @@
       },
 
       handleTagInput(ev) {
-        this.newTag = ev.target.value;
+        this.addTagPlaceholder = '';
+        this.newTag = ev.target.value || '';
       },
 
       handleTagKeyDown(ev) {
         const addTag = () => {
           ev.preventDefault();
-          this.addTagPlaceholder = '';
           this.addTag(this.newTag);
           this.newTag = '';
         };
@@ -171,7 +195,14 @@
           Backspace: () => {
             if (this.newTag === '') {
               ev.preventDefault();
-              this.newTag = this.bookmark.tags.pop();
+              this.animateTagPause = true;
+              const newTag = this.bookmark.tags.pop() || '';
+              // Prevent flash when deleting into an existing tag by waiting at
+              // least one render cycle.
+              setTimeout(() => {
+                this.animateTagPause = false;
+                this.newTag = newTag;
+              }, 16);
             }
           },
           Escape: () => {
@@ -184,6 +215,9 @@
         if (handler) handler();
       },
 
+      removeTag(tag) {
+        this.bookmark.tags = this.bookmark.tags.filter(t => t !== tag);
+      },
     },
 
     mounted() {
@@ -193,6 +227,7 @@
         this.bookmark.description = t.title;
         getSuggestedTags(t.url).then(tags => {
           this.suggestedTags = tags;
+          requestAnimationFrame(() => this.animateTags = true);
         });
         if (this.existingBookmark) {  // depends on this.bookmark.href
           this.bookmark.description = this.existingBookmark.description;
