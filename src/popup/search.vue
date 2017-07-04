@@ -93,10 +93,9 @@
     background lh-grey-4
 
   .list
-    list-style none
+    plain-list()
     margin-bottom 0
     margin-top 2px
-    padding 0
     > div
       // HACK: keep some space at the top of the virtual container.
       box-sizing content-box
