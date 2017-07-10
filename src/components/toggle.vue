@@ -2,8 +2,8 @@
   <div :class="{[$style.toggle]: true, [$style.toggleOn]: on}"
     @click="$emit('toggle')">
     <div :class="$style.toggleButton">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px">
-        <g :class="$style.toggleIcon" fill="none" stroke-width="2">
+      <svg width="16px" height="16px" viewBox="0 0 200 200">
+        <g :class="$style.toggleIcon" fill="none" stroke-width="20">
           <path ref="togglePath" :d="iconPath" />
         </g>
       </svg>
@@ -45,7 +45,6 @@
       transform translateX(32px)
     .toggle-icon
       stroke lh-teal
-      stroke-endcap round
       stroke-linecap round
 </style>
 
@@ -53,8 +52,8 @@
   import anime from 'animejs';
 
   const ICON_PATHS = {
-    [true]: 'M3,8.5 L6.5,12 M6.5,12 L14,4',
-    [false]: 'M3,3 L13,13 M3,13 L13,3',
+    [true]: 'M30,110 L80,160 M80,160 L180,60',
+    [false]: 'M40,40 L160,160 M40,160 L160,40',
   };
 
   export default {

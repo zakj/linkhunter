@@ -3,8 +3,10 @@
     <transition-group tag="ul" :class="$style.tags"
       :name="loaded && !pauseAddAnimation ? 'tag' : null">
       <li :class="$style.tag" v-for="tag in tags" :key="tag"
-        @click="$emit('remove', tag)">{{ tag }}</li>
-      <!-- TODO: add close X -->
+        @click="$emit('remove', tag)">
+        {{ tag }}
+        <svg><use href="/icons.svg#x" /></svg>
+      </li>
       <!-- TODO: tag autocomplete -->
       <input :class="$style.tagInput" :placeholder="placeholder"
         key=" " :size="inputSize"
@@ -56,6 +58,15 @@
       background lh-grey-4
       color #fff
       -webkit-font-smoothing antialiased
+      svg
+        height 7px
+        left 2px
+        opacity .5
+        position relative
+        stroke #fff
+        width 7px
+      &:hover svg
+        opacity 1
 
   .tag-input
     border none

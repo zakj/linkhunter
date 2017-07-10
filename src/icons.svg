@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <symbol id="check" viewBox="0 0 200 200">
+    <path id="check" d="M30,110 L80,160 M80,160 L180,60"
+      stroke-width="20"
+      stroke-linecap="round"></path>
+  </symbol>
+
+  <symbol id="x" viewBox="0 0 200 200">
+    <path d="M20,20 L180,180 M20,180 L180,20" stroke-width="24"></path>
+  </symbol>
+
+</svg>

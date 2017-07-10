@@ -79,10 +79,10 @@ module.exports = (env={}) => {
         chunks: ['popup'],
       }),
       new webpack.optimize.ModuleConcatenationPlugin(),
-      new CopyWebpackPlugin([{
-        context: __dirname,
-        from: 'manifest.json',
-      }]),
+      new CopyWebpackPlugin([
+        {context: __dirname, from: 'manifest.json'},
+        {context: __dirname, from: 'src/icons.svg'},
+      ]),
       new HtmlWebpackPlugin({
         chunks: ['vendor', 'popup'],
         template: 'popup/index.html',
