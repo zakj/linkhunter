@@ -80,7 +80,7 @@
 
 <script>
   import {getLoggedIn} from '@/pinboard';
-  import {openUrl, sendMessage} from '@/browser';
+  import {getKeyboardShortcut, openUrl, sendMessage} from '@/browser';
   import {mapGetters, mapState} from 'vuex';
   import Pane from '@/components/pane';
   import Toggle from '@/components/toggle';
@@ -145,11 +145,7 @@
     },
 
     mounted() {
-      // TODO: move to browser.js
-      chrome.commands.getAll(commands => {
-        const action = commands.find(c => c.name === '_execute_browser_action');
-        this.shortcut = action && action.shortcut || this.NO_SHORTCUT;
-      });
+      getKeyboardShortcut().then(val => this.shortcut = val || this.NO_SHORTCUT);
       getLoggedIn().then(val => this.loggedIn = val);
     },
   };

@@ -12,6 +12,15 @@ export function fetchPinboardToken() {
   });
 }
 
+export function getKeyboardShortcut() {
+  return new Promise(resolve => {
+    chrome.commands.getAll(commands => {
+      const action = commands.find(c => c.name === '_execute_browser_action');
+      resolve(action && action.shortcut);
+    });
+  });
+}
+
 export function getSelectedTab() {
   const queryInfo = {active: true, currentWindow: true};
   return new Promise(resolve => {
