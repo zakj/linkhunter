@@ -37,6 +37,10 @@
       "quotes": [
         "error",
         "single"
+      ],
+      "no-unused-vars": [
+        "error",
+        {"argsIgnorePattern": "^_"}
       ]
     }
   },
