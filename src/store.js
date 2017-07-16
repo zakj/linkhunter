@@ -19,6 +19,17 @@ const store = new Vuex.Store({
 
   getters: {
     username: state => state.token ? state.token.split(':')[0] : null,
+
+    mostCommonTags(state) {
+      return _.flow([
+        _.flatMap(b => b.tags),
+        _.groupBy(tag => tag),
+        _.mapValues(tags => tags.length),
+        _.toPairs,
+        _.sortBy(([_tag, count]) => -count),
+        _.map(([tag, _count]) => tag),
+      ])(state.bookmarks);
+    },
   },
 
   mutations: {

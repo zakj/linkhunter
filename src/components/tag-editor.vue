@@ -7,13 +7,14 @@
         {{ tag }}
         <svg><use href="/icons.svg#x" /></svg>
       </li>
-      <!-- TODO: tag autocomplete -->
-      <input :class="$style.tagInput" :placeholder="placeholder"
-        key=" " :size="inputSize"
-        :value="newTag"
-        @input="handleTagInput"
-        @keydown="handleTagKeyDown"
-        @blur="addTag">
+      <div :class="$style.autocomplete" key="autocomplete">
+        <div :class="$style.tagOutput">
+          {{ placeholder }}
+          {{ newTag }}<span :class="$style.suggestion">{{ suggestionSuffix }}</span>
+        </div>
+        <input :class="$style.tagInput" ref="tagInput" :value="newTag"
+          @input="handleTagInput" @keydown="handleTagKeyDown" @blur="addTag">
+      </div>
     </transition-group>
     <transition-group tag="ul" :class="$style.suggestedTags"
       :name="loaded ? 'tag' : null">
@@ -69,14 +70,33 @@
       &:hover svg
         opacity 1
 
-  .tag-input
-    border none
+  .autocomplete
+    flex 1
     line-height tag-height
     margin-bottom tag-bottom-margin
+    position relative
+
+  .tag-output
+    color lh-grey-9
+    height tag-height
+    pointer-events none
+    white-space nowrap
+
+  .tag-input
+    background transparent
+    border none
+    font inherit
+    left 0
     padding 0
-    flex 1
+    position absolute
+    top 0
+    width 100%
+    -webkit-text-fill-color transparent  // maintain cursor, hide text
     &:focus
       outline none
+
+  .suggestion
+    opacity .3
 
   .suggested-tags
     @extend $tags-base
@@ -100,23 +120,37 @@
 </style>
 
 <script>
+  import _ from 'lodash/fp';
+  import {mapGetters} from 'vuex';
+
   export default {
     data() {
       return {
+        newTag: '',
         pauseAddAnimation: false,
         placeholder: 'Add tags',
-        newTag: '',
       };
     },
 
     computed: {
-      inputSize() {
-        return Math.max(1, this.newTag.length, this.placeholder.length);
+      suggestion() {
+        if (this.newTag) {
+          const unusedCommonTags = _.difference(this.mostCommonTags, this.tags);
+          const suggestion = _.find(_.startswith(this.newTag), unusedCommonTags);
+          return suggestion || '';
+        }
+        return '';
+      },
+
+      suggestionSuffix() {
+        return this.suggestion.substring(this.newTag.length);
       },
 
       unusedSuggestedTags() {
         return this.suggestedTags.filter(t => !this.tags.includes(t));
       },
+
+      ...mapGetters(['mostCommonTags']),
     },
 
     methods: {
@@ -156,6 +190,10 @@
           },
           Enter: addTag,
           ' ': addTag,
+          Tab: () => {
+            if (this.suggestion) this.newTag = this.suggestion;
+            addTag();
+          },
         }[ev.key];
         if (handler) handler();
       },
