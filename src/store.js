@@ -1,4 +1,4 @@
-import mapValues from 'lodash/fp/mapValues';
+import _ from 'lodash/fp';
 import Vue from 'vue';
 import Vuex from 'vuex';
 
@@ -68,7 +68,7 @@ const store = new Vuex.Store({
 
 store.hydrate = new Promise(resolve => {
   storage.addListener(changes => {
-    store.commit('syncBrowser', mapValues(v => v.newValue, changes));
+    store.commit('syncBrowser', _.mapValues(v => v.newValue, changes));
   });
 
   storage.get(...Object.keys(store.state)).then(changes => {

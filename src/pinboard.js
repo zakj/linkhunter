@@ -1,5 +1,4 @@
-import flattenDeep from 'lodash/fp/flattenDeep';
-import uniq from 'lodash/fp/uniq';
+import _ from 'lodash/fp';
 
 import store from '@/store';
 
@@ -49,8 +48,8 @@ export function getLoggedIn() {
 }
 
 export function getSuggestedTags(url) {
-  return query(PINBOARD.suggest, {url})
-    .then(json => uniq(flattenDeep(json.map(Object.values))));
+  const uniqValues = _.flow([_.map(_.values), _.flattenDeep, _.uniq]);
+  return query(PINBOARD.suggest, {url}).then(json => uniqValues(json));
 }
 
 export function updateBookmarks() {
