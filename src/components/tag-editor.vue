@@ -12,7 +12,8 @@
         key=" " :size="inputSize"
         :value="newTag"
         @input="handleTagInput"
-        @keydown="handleTagKeyDown">
+        @keydown="handleTagKeyDown"
+        @blur="addTag">
     </transition-group>
     <transition-group tag="ul" :class="$style.suggestedTags"
       :name="loaded ? 'tag' : null">
@@ -119,6 +120,11 @@
     },
 
     methods: {
+      addTag() {
+        this.$emit('add', this.newTag);
+        this.newTag = '';
+      },
+
       handleTagInput(ev) {
         this.placeholder = '';
         this.newTag = ev.target.value || '';
@@ -127,8 +133,7 @@
       handleTagKeyDown(ev) {
         const addTag = () => {
           ev.preventDefault();
-          this.$emit('add', this.newTag);
-          this.newTag = '';
+          this.addTag();
         };
         const handler = {
           Backspace: () => {
