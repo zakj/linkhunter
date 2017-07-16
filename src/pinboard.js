@@ -4,6 +4,7 @@ import store from '@/store';
 
 // https://pinboard.in/api
 const PINBOARD = {
+  add: 'https://api.pinboard.in/v1/posts/add',
   all: 'https://api.pinboard.in/v1/posts/all',
   password: 'https://pinboard.in/settings/password',
   suggest: 'https://api.pinboard.in/v1/posts/suggest',
@@ -50,6 +51,20 @@ export function getLoggedIn() {
 export function getSuggestedTags(url) {
   const uniqValues = _.flow([_.map(_.values), _.flattenDeep, _.uniq]);
   return query(PINBOARD.suggest, {url}).then(json => uniqValues(json));
+}
+
+export function saveBookmark(bookmark) {
+  const params = {
+    // url: bookmark.href,
+    description: bookmark.description,
+    tags: bookmark.tags.join(' '),
+    shared: bookmark.shared,
+  };
+  return query(PINBOARD.add, params).then(response => {
+    if (response.result_code !== 'done') {
+      throw new Error(response.result_code);
+    }
+  });
 }
 
 export function updateBookmarks() {

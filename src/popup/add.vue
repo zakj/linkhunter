@@ -6,18 +6,23 @@
       You bookmarked this page {{ existingBookmarkAge }}.
     </div>
 
-    <input :class="$style.title" placeholder="Title" :value="bookmark.description">
-    <input :class="$style.url" placeholder="URL" tabindex="-1" :value="bookmark.href">
+    <input :class="$style.title" placeholder="Title" :value="bookmark.description"
+      @input="bookmark.description = $event.target.value">
+    <input :class="$style.url" placeholder="URL" tabindex="-1" :value="bookmark.href"
+      @input="bookmark.href = $event.target.value">
     <tag-editor :class="$style.tags"
       :tags="bookmark.tags"
       :suggested-tags="suggestedTags"
       :loaded="loadedSuggestedTags"
       @add="addTag" @remove="removeTag"></tag-editor>
 
-    <!-- TODO: style -->
-    <label><input type="checkbox"> This link is private</label>
+    <!-- TODO: style saveError and saving state -->
+    {{ saveError }}
 
-    <a :class="$style.button">Save to Pinboard</a>
+    <!-- TODO: style -->
+    <label><input type="checkbox" v-model="bookmark.shared"> This link is private</label>
+
+    <a :class="$style.button" @click="saveBookmark">Save to Pinboard</a>
   </pane>
 </template>
 
@@ -58,7 +63,7 @@
 <script>
   import {getSelectedTab} from '@/browser';
   import moment from 'moment';
-  import {getSuggestedTags} from '@/pinboard';
+  import {getSuggestedTags, saveBookmark} from '@/pinboard';
   import Pane from '@/components/pane';
   import TagEditor from '@/components/tag-editor';
 
@@ -70,9 +75,12 @@
         bookmark: {
           description: null,
           href: null,
+          shared: !this.$store.state.defaultPrivate,
           tags: [],
         },
         loadedSuggestedTags: false,
+        saveError: '',
+        saving: false,
         suggestedTags: [],
       };
     },
@@ -102,6 +110,17 @@
 
       removeTag(tag) {
         this.bookmark.tags = this.bookmark.tags.filter(t => t !== tag);
+      },
+
+      saveBookmark() {
+        if (this.saving) return;
+        this.saving = true;
+        saveBookmark(this.bookmark)
+          .then(() => this.$router.push('/'))
+          .catch(error => {
+            this.saving = false;
+            this.saveError = error.toString();
+          });
       },
     },
 
