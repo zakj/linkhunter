@@ -6,8 +6,12 @@
         @input="handleSearchInput($event)"
         @keydown="handleKeyDown"
         @blur="refocus">
-      <router-link :class="$style.buttonAdd" to="/add">Add</router-link>
-      <router-link :class="$style.buttonSettings" to="/settings">Settings</router-link>
+      <router-link :class="$style.buttonAdd" to="/add">
+        <svg><use href="/icons.svg#plus" /></svg>
+      </router-link>
+      <router-link :class="$style.buttonSettings" to="/settings">
+        <svg><use href="/icons.svg#settings" /></svg>
+      </router-link>
     </div>
 
     <hr :class="{[$style.rule]: true, [$style.raised]: isScrolled}">
@@ -79,18 +83,30 @@
     @extend $input
     flex 1
 
+  svg-button(size, icon-size)
+    padding ((size - icon-size) / 2)
+    svg
+      display block
+      height icon-size
+      width icon-size
+
   .button
     @extend $button
-    hide-text()
+    button-size = 40px
+    height button-size
     margin-left 8px
-    width 40px
+    width button-size
 
   .button-add
     @extend .button
+    stroke #fff
+    svg-button(40px, 12px)
 
   .button-settings
     @extend .button
     background lh-grey-4
+    fill #fff
+    svg-button(40px, 16px)
 
   .list
     plain-list()
