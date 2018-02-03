@@ -55,7 +55,7 @@ export function getSuggestedTags(url) {
 
 export function saveBookmark(bookmark) {
   const params = {
-    // url: bookmark.href,
+    url: bookmark.href,
     description: bookmark.description,
     tags: bookmark.tags.join(' '),
     shared: bookmark.shared,
